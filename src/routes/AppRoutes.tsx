@@ -28,6 +28,7 @@ import { Templates } from '@/pages/Admin/Templates/Templates';
 import { Languages } from '@/pages/Admin/Languages/Languages';
 import { Agents } from '@/pages/Admin/Agents/Agents';
 import { Users } from '@/pages/Admin/Users/Users';
+import { BettingSites } from '@/pages/Admin/BettingSites/BettingSites';
 
 // Shared Pages
 import { ChangePassword } from '@/pages/ChangePassword/ChangePassword';
@@ -134,6 +135,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <><Header /><Users /></>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/betting-sites"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <><Header /><BettingSites /></>
           </ProtectedRoute>
         }
       />

@@ -173,6 +173,8 @@ export interface CreateTransactionRequest {
   depositBankId?: number;
   withdrawalBankId?: number;
   withdrawalAddress?: string;
+  bettingSiteId?: number;
+  playerSiteId?: string;
   screenshot?: File;
 }
 
@@ -445,6 +447,35 @@ export interface ChartData {
   date: string;
   deposits: number;
   withdrawals: number;
+  total: number;
+}
+
+export interface BettingSite {
+  id: number;
+  name: string;
+  description: string;
+  website: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBettingSiteRequest {
+  name: string;
+  description: string;
+  website: string;
+  isActive: boolean;
+}
+
+export interface UpdateBettingSiteRequest {
+  name?: string;
+  description?: string;
+  website?: string;
+  isActive?: boolean;
+}
+
+export interface BettingSitesResponse {
+  bettingSites: BettingSite[];
   total: number;
 }
 

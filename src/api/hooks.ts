@@ -467,6 +467,70 @@ export const useRoles = () => {
   });
 };
 
+// Betting Sites Hooks
+export const useBettingSites = () => {
+  return useQuery({
+    queryKey: ['config', 'betting-sites'],
+    queryFn: () => configApi.getBettingSites(),
+  });
+};
+
+export const useAdminBettingSites = () => {
+  return useQuery({
+    queryKey: ['admin', 'betting-sites'],
+    queryFn: () => adminApi.getBettingSites(),
+  });
+};
+
+export const useAdminBettingSite = (id: number) => {
+  return useQuery({
+    queryKey: ['admin', 'betting-sites', id],
+    queryFn: () => adminApi.getBettingSite(id),
+    enabled: !!id,
+  });
+};
+
+export const useCreateBettingSite = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateBettingSiteRequest) => adminApi.createBettingSite(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'betting-sites'] });
+    },
+  });
+};
+
+export const useUpdateBettingSite = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateBettingSiteRequest }) =>
+      adminApi.updateBettingSite(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'betting-sites'] });
+    },
+  });
+};
+
+export const useToggleBettingSiteStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.toggleBettingSiteStatus(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'betting-sites'] });
+    },
+  });
+};
+
+export const useDeleteBettingSite = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteBettingSite(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'betting-sites'] });
+    },
+  });
+};
+
 /* ==========================================
    AGENT HOOKS
    ========================================== */

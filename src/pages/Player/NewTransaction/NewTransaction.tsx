@@ -9,6 +9,7 @@ import {
   useCreateTransaction,
   useDepositBanks,
   useWithdrawalBanks,
+  useBettingSites,
   useLanguages,
 } from '@/api/hooks';
 import { Input } from '@/components/ui/Input/Input';
@@ -27,6 +28,8 @@ const transactionSchema = z.object({
   withdrawalBankId: z.string().optional(),
   bankAccountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
+  bettingSiteId: z.string().optional(),
+  playerSiteId: z.string().optional(),
 }).refine(
   (data) => {
     if (data.type === 'DEPOSIT') return !!data.depositBankId;
@@ -52,6 +55,13 @@ export const NewTransaction: React.FC = () => {
   const createTransaction = useCreateTransaction();
   const { data: depositBanks, isLoading: loadingDepositBanks } = useDepositBanks();
   const { data: withdrawalBanks, isLoading: loadingWithdrawalBanks } = useWithdrawalBanks();
+  const { data: bettingSites, isLoading: loadingBettingSites } = useBettingSites();
+  
+  // Debug logging for betting sites
+  console.log('Betting Sites in Transaction Form:', bettingSites);
+  console.log('Loading Betting Sites:', loadingBettingSites);
+  console.log('Betting Sites Type:', typeof bettingSites?.bettingSites);
+  console.log('Is Array:', Array.isArray(bettingSites?.bettingSites));
   const { data: languages } = useLanguages();
 
   const {
@@ -114,6 +124,8 @@ export const NewTransaction: React.FC = () => {
         // Map frontend fields to backend API
         withdrawalAddress: data.type === 'WITHDRAW' ? 
           `${data.bankAccountNumber} - ${data.accountHolderName}` : undefined,
+        bettingSiteId: data.bettingSiteId ? parseInt(data.bettingSiteId) : undefined,
+        playerSiteId: data.playerSiteId || undefined,
         screenshot: selectedFile || undefined,
       };
 
@@ -212,8 +224,33 @@ export const NewTransaction: React.FC = () => {
               label="Currency"
               defaultValue="ETB"
               readOnly
+              helperText="Currency is set to ETB (Ethiopian Birr)"
               fullWidth
               required
+            />
+
+            <Select
+              {...register('bettingSiteId')}
+              label="Betting Site"
+              options={
+                bettingSites?.bettingSites && Array.isArray(bettingSites.bettingSites)
+                  ? bettingSites.bettingSites.map(site => ({
+                      value: site.id.toString(),
+                      label: `${site.name} - ${site.website}`,
+                    }))
+                  : []
+              }
+              placeholder={loadingBettingSites ? "Loading betting sites..." : "Select betting site"}
+              helperText="Choose the betting platform where you want to deposit/withdraw"
+              fullWidth
+            />
+
+            <Input
+              {...register('playerSiteId')}
+              label="Player Username/ID"
+              placeholder="Enter your username or ID on the betting site"
+              helperText="Your username or ID on the selected betting site (for agent identification)"
+              fullWidth
             />
 
             {transactionType === 'DEPOSIT' && (

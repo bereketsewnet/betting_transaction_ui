@@ -113,12 +113,18 @@ export const transactionApi = {
     if (data.withdrawalBankId) {
       formData.append('withdrawalBankId', data.withdrawalBankId.toString());
     }
-    if (data.withdrawalAddress) {
-      formData.append('withdrawalAddress', data.withdrawalAddress);
-    }
-    if (data.screenshot) {
-      formData.append('screenshot', data.screenshot);
-    }
+      if (data.withdrawalAddress) {
+        formData.append('withdrawalAddress', data.withdrawalAddress);
+      }
+      if (data.bettingSiteId) {
+        formData.append('bettingSiteId', data.bettingSiteId.toString());
+      }
+      if (data.playerSiteId) {
+        formData.append('playerSiteId', data.playerSiteId);
+      }
+      if (data.screenshot) {
+        formData.append('screenshot', data.screenshot);
+      }
 
     const response = await apiClient.post<{ transaction: Transaction }>(
       '/transactions',
@@ -357,6 +363,60 @@ export const adminApi = {
     const response = await apiClient.get<{ roles: Role[] }>('/admin/roles');
     return response.data;
   },
+
+  // Betting Sites Management
+  getBettingSites: async (): Promise<BettingSitesResponse> => {
+    const response = await apiClient.get<BettingSite[]>('/admin/betting-sites');
+    console.log('Raw admin betting sites response:', response.data);
+    
+    // Handle different response structures
+    if (Array.isArray(response.data)) {
+      return {
+        bettingSites: response.data,
+        total: response.data.length,
+      };
+    } else if (response.data && typeof response.data === 'object') {
+      // If it's an object, try to extract the array
+      const data = response.data as any;
+      if (data.bettingSites && Array.isArray(data.bettingSites)) {
+        return {
+          bettingSites: data.bettingSites,
+          total: data.total || data.bettingSites.length,
+        };
+      }
+    }
+    
+    // Fallback: return empty array
+    console.warn('Unexpected admin betting sites response structure:', response.data);
+    return {
+      bettingSites: [],
+      total: 0,
+    };
+  },
+
+  getBettingSite: async (id: number): Promise<{ bettingSite: BettingSite }> => {
+    const response = await apiClient.get<{ bettingSite: BettingSite }>(`/admin/betting-sites/${id}`);
+    return response.data;
+  },
+
+  createBettingSite: async (data: CreateBettingSiteRequest): Promise<{ bettingSite: BettingSite }> => {
+    const response = await apiClient.post<{ bettingSite: BettingSite }>('/admin/betting-sites', data);
+    return response.data;
+  },
+
+  updateBettingSite: async (id: number, data: UpdateBettingSiteRequest): Promise<{ bettingSite: BettingSite }> => {
+    const response = await apiClient.put<{ bettingSite: BettingSite }>(`/admin/betting-sites/${id}`, data);
+    return response.data;
+  },
+
+  toggleBettingSiteStatus: async (id: number): Promise<{ bettingSite: BettingSite }> => {
+    const response = await apiClient.put<{ bettingSite: BettingSite }>(`/admin/betting-sites/${id}/toggle-status`);
+    return response.data;
+  },
+
+  deleteBettingSite: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/betting-sites/${id}`);
+  },
 };
 
 /* ==========================================
@@ -419,6 +479,35 @@ export const configApi = {
       '/config/withdrawal-banks'
     );
     return response.data;
+  },
+
+  getBettingSites: async (): Promise<BettingSitesResponse> => {
+    const response = await apiClient.get<BettingSite[]>('/config/betting-sites');
+    console.log('Raw betting sites response:', response.data);
+    
+    // Handle different response structures
+    if (Array.isArray(response.data)) {
+      return {
+        bettingSites: response.data,
+        total: response.data.length,
+      };
+    } else if (response.data && typeof response.data === 'object') {
+      // If it's an object, try to extract the array
+      const data = response.data as any;
+      if (data.bettingSites && Array.isArray(data.bettingSites)) {
+        return {
+          bettingSites: data.bettingSites,
+          total: data.total || data.bettingSites.length,
+        };
+      }
+    }
+    
+    // Fallback: return empty array
+    console.warn('Unexpected betting sites response structure:', response.data);
+    return {
+      bettingSites: [],
+      total: 0,
+    };
   },
 
   getLanguages: async (): Promise<{ languages: Language[] }> => {
