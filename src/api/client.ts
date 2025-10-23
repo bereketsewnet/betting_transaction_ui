@@ -1,0 +1,401 @@
+import apiClient from './axios';
+import type {
+  LoginRequest,
+  LoginResponse,
+  RefreshTokenResponse,
+  ChangePasswordRequest,
+  User,
+  Player,
+  CreatePlayerRequest,
+  UpdatePlayerRequest,
+  Transaction,
+  CreateTransactionRequest,
+  UpdateTransactionStatusRequest,
+  AssignTransactionRequest,
+  ProcessTransactionRequest,
+  PaginatedResponse,
+  TransactionFilters,
+  AgentTaskFilters,
+  DepositBank,
+  CreateDepositBankRequest,
+  UpdateDepositBankRequest,
+  WithdrawalBank,
+  CreateWithdrawalBankRequest,
+  UpdateWithdrawalBankRequest,
+  Language,
+  CreateLanguageRequest,
+  Template,
+  CreateTemplateRequest,
+  AgentStats,
+  UploadResponse,
+  UploadConfig,
+  WelcomeMessage,
+  HealthCheckResponse,
+} from '@/types';
+
+/* ==========================================
+   AUTHENTICATION API
+   ========================================== */
+
+export const authApi = {
+  login: async (data: LoginRequest): Promise<LoginResponse> => {
+    const response = await apiClient.post<LoginResponse>('/auth/login', data);
+    return response.data;
+  },
+
+  refresh: async (): Promise<RefreshTokenResponse> => {
+    const response = await apiClient.post<RefreshTokenResponse>('/auth/refresh');
+    return response.data;
+  },
+
+  getProfile: async (): Promise<User> => {
+    const response = await apiClient.get<User>('/auth/profile');
+    return response.data;
+  },
+
+  changePassword: async (data: ChangePasswordRequest): Promise<void> => {
+    await apiClient.put('/auth/change-password', data);
+  },
+
+  logout: async (): Promise<void> => {
+    await apiClient.post('/auth/logout');
+  },
+};
+
+/* ==========================================
+   PLAYER API
+   ========================================== */
+
+export const playerApi = {
+  create: async (data: CreatePlayerRequest): Promise<{ player: Player }> => {
+    const response = await apiClient.post<{ player: Player }>('/players', data);
+    return response.data;
+  },
+
+  getByUuid: async (playerUuid: string): Promise<{ player: Player }> => {
+    const response = await apiClient.get<{ player: Player }>(`/players/${playerUuid}`);
+    return response.data;
+  },
+
+  update: async (
+    playerUuid: string,
+    data: UpdatePlayerRequest
+  ): Promise<{ player: Player }> => {
+    const response = await apiClient.put<{ player: Player }>(`/players/${playerUuid}`, data);
+    return response.data;
+  },
+};
+
+/* ==========================================
+   TRANSACTION API
+   ========================================== */
+
+export const transactionApi = {
+  create: async (data: CreateTransactionRequest): Promise<{ transaction: Transaction }> => {
+    const formData = new FormData();
+    formData.append('playerUuid', data.playerUuid);
+    formData.append('type', data.type);
+    formData.append('amount', data.amount.toString());
+    formData.append('currency', data.currency);
+
+    if (data.depositBankId) {
+      formData.append('depositBankId', data.depositBankId.toString());
+    }
+    if (data.withdrawalBankId) {
+      formData.append('withdrawalBankId', data.withdrawalBankId.toString());
+    }
+    if (data.withdrawalAddress) {
+      formData.append('withdrawalAddress', data.withdrawalAddress);
+    }
+    if (data.screenshot) {
+      formData.append('screenshot', data.screenshot);
+    }
+
+    const response = await apiClient.post<{ transaction: Transaction }>(
+      '/transactions',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
+
+  getById: async (id: number, playerUuid?: string): Promise<{ transaction: Transaction }> => {
+    const params = playerUuid ? { player_uuid: playerUuid } : {};
+    const response = await apiClient.get<{ transaction: Transaction }>(
+      `/transactions/${id}`,
+      { params }
+    );
+    return response.data;
+  },
+
+  getByPlayer: async (
+    playerUuid: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<PaginatedResponse<Transaction>> => {
+    const response = await apiClient.get<PaginatedResponse<Transaction>>('/transactions', {
+      params: { playerUuid, page, limit },
+    });
+    return response.data;
+  },
+};
+
+/* ==========================================
+   ADMIN API
+   ========================================== */
+
+export const adminApi = {
+  // Transactions
+  getTransactions: async (
+    page: number = 1,
+    limit: number = 20,
+    filters?: TransactionFilters
+  ): Promise<PaginatedResponse<Transaction>> => {
+    const response = await apiClient.get<PaginatedResponse<Transaction>>(
+      '/admin/transactions',
+      {
+        params: { page, limit, ...filters },
+      }
+    );
+    return response.data;
+  },
+
+  assignTransaction: async (id: number, data: AssignTransactionRequest): Promise<void> => {
+    await apiClient.put(`/admin/transactions/${id}/assign`, data);
+  },
+
+  updateTransactionStatus: async (
+    id: number,
+    data: UpdateTransactionStatusRequest
+  ): Promise<void> => {
+    await apiClient.put(`/admin/transactions/${id}/status`, data);
+  },
+
+  // Agents
+  getAgents: async (): Promise<{ agents: AgentStats[] }> => {
+    const response = await apiClient.get<{ agents: AgentStats[] }>('/admin/agents');
+    return response.data;
+  },
+
+  // Deposit Banks
+  getDepositBanks: async (): Promise<{ banks: DepositBank[] }> => {
+    const response = await apiClient.get<{ banks: DepositBank[] }>('/admin/deposit-banks');
+    return response.data;
+  },
+
+  createDepositBank: async (data: CreateDepositBankRequest): Promise<{ bank: DepositBank }> => {
+    const response = await apiClient.post<{ bank: DepositBank }>('/admin/deposit-banks', data);
+    return response.data;
+  },
+
+  updateDepositBank: async (
+    id: number,
+    data: UpdateDepositBankRequest
+  ): Promise<{ bank: DepositBank }> => {
+    const response = await apiClient.put<{ bank: DepositBank }>(
+      `/admin/deposit-banks/${id}`,
+      data
+    );
+    return response.data;
+  },
+
+  deleteDepositBank: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/deposit-banks/${id}`);
+  },
+
+  // Withdrawal Banks
+  getWithdrawalBanks: async (): Promise<{ banks: WithdrawalBank[] }> => {
+    const response = await apiClient.get<{ banks: WithdrawalBank[] }>(
+      '/admin/withdrawal-banks'
+    );
+    return response.data;
+  },
+
+  createWithdrawalBank: async (
+    data: CreateWithdrawalBankRequest
+  ): Promise<{ bank: WithdrawalBank }> => {
+    const response = await apiClient.post<{ bank: WithdrawalBank }>(
+      '/admin/withdrawal-banks',
+      data
+    );
+    return response.data;
+  },
+
+  updateWithdrawalBank: async (
+    id: number,
+    data: UpdateWithdrawalBankRequest
+  ): Promise<{ bank: WithdrawalBank }> => {
+    const response = await apiClient.put<{ bank: WithdrawalBank }>(
+      `/admin/withdrawal-banks/${id}`,
+      data
+    );
+    return response.data;
+  },
+
+  deleteWithdrawalBank: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/withdrawal-banks/${id}`);
+  },
+
+  // Languages
+  getLanguages: async (): Promise<{ languages: Language[] }> => {
+    const response = await apiClient.get<{ languages: Language[] }>('/admin/languages');
+    return response.data;
+  },
+
+  createLanguage: async (data: CreateLanguageRequest): Promise<{ language: Language }> => {
+    const response = await apiClient.post<{ language: Language }>('/admin/languages', data);
+    return response.data;
+  },
+
+  // Templates
+  getTemplates: async (): Promise<{ templates: Template[] }> => {
+    const response = await apiClient.get<{ templates: Template[] }>('/admin/templates');
+    return response.data;
+  },
+
+  createTemplate: async (data: CreateTemplateRequest): Promise<{ template: Template }> => {
+    const response = await apiClient.post<{ template: Template }>('/admin/templates', data);
+    return response.data;
+  },
+
+  updateTemplate: async (id: number, data: CreateTemplateRequest): Promise<{ template: Template }> => {
+    const response = await apiClient.put<{ template: Template }>(`/admin/templates/${id}`, data);
+    return response.data;
+  },
+
+  deleteTemplate: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/templates/${id}`);
+  },
+
+  // Update Language
+  updateLanguage: async (id: number, data: CreateLanguageRequest): Promise<{ language: Language }> => {
+    const response = await apiClient.put<{ language: Language }>(`/admin/languages/${id}`, data);
+    return response.data;
+  },
+
+  deleteLanguage: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/languages/${id}`);
+  },
+};
+
+/* ==========================================
+   AGENT API
+   ========================================== */
+
+export const agentApi = {
+  getTasks: async (
+    page: number = 1,
+    limit: number = 10,
+    filters?: AgentTaskFilters
+  ): Promise<PaginatedResponse<Transaction>> => {
+    const response = await apiClient.get<PaginatedResponse<Transaction>>('/agent/tasks', {
+      params: { page, limit, ...filters },
+    });
+    return response.data;
+  },
+
+  processTransaction: async (id: number, data: ProcessTransactionRequest): Promise<void> => {
+    await apiClient.put(`/agent/transactions/${id}/process`, data);
+  },
+
+  uploadEvidence: async (file: File): Promise<UploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await apiClient.post<UploadResponse>('/agent/evidence', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  getStats: async (): Promise<AgentStats> => {
+    const response = await apiClient.get<AgentStats>('/agent/stats');
+    return response.data;
+  },
+};
+
+/* ==========================================
+   CONFIG API (Public)
+   ========================================== */
+
+export const configApi = {
+  getWelcome: async (lang: string = 'en'): Promise<WelcomeMessage> => {
+    const response = await apiClient.get<WelcomeMessage>('/config/welcome', {
+      params: { lang },
+    });
+    return response.data;
+  },
+
+  getDepositBanks: async (): Promise<{ banks: DepositBank[] }> => {
+    const response = await apiClient.get<{ banks: DepositBank[] }>('/config/deposit-banks');
+    return response.data;
+  },
+
+  getWithdrawalBanks: async (): Promise<{ banks: WithdrawalBank[] }> => {
+    const response = await apiClient.get<{ banks: WithdrawalBank[] }>(
+      '/config/withdrawal-banks'
+    );
+    return response.data;
+  },
+
+  getLanguages: async (): Promise<{ languages: Language[] }> => {
+    const response = await apiClient.get<{ languages: Language[] }>('/config/languages');
+    return response.data;
+  },
+};
+
+/* ==========================================
+   UPLOAD API
+   ========================================== */
+
+export const uploadApi = {
+  uploadFile: async (file: File, onProgress?: (progress: number) => void): Promise<UploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await apiClient.post<UploadResponse>('/uploads', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(progress);
+        }
+      },
+    });
+    return response.data;
+  },
+
+  getConfig: async (): Promise<UploadConfig> => {
+    const response = await apiClient.get<UploadConfig>('/uploads/config');
+    return response.data;
+  },
+
+  deleteFile: async (filename: string): Promise<void> => {
+    await apiClient.delete(`/uploads/${filename}`);
+  },
+};
+
+/* ==========================================
+   SYSTEM API
+   ========================================== */
+
+export const systemApi = {
+  healthCheck: async (): Promise<HealthCheckResponse> => {
+    const response = await apiClient.get<HealthCheckResponse>('/health');
+    return response.data;
+  },
+
+  getMetrics: async (): Promise<unknown> => {
+    const response = await apiClient.get('/metrics');
+    return response.data;
+  },
+};
+

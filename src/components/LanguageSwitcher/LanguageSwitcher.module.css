@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.icon {
+  color: var(--color-text-secondary);
+}
+
+.select {
+  border: none;
+  background: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+}
+
+.select:focus {
+  outline: none;
+}
+

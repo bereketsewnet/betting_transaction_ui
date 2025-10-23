@@ -1,0 +1,119 @@
+.container {
+  padding: var(--spacing-xl);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.iconPrimary {
+  color: var(--color-primary);
+}
+
+.iconWarning {
+  color: #f59e0b;
+}
+
+.iconSuccess {
+  color: var(--color-success);
+}
+
+.loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.username {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.email {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.stat {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.statPending {
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.statProcessing {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.statSuccess {
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.statFailed {
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.successRate {
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statCard {
+    gap: var(--spacing-md);
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+}
+
