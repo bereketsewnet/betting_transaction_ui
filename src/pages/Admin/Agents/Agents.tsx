@@ -30,50 +30,50 @@ export const Agents: React.FC = () => {
       render: (value) => <span className={styles.email}>{value}</span>,
     },
     {
-      key: 'stats',
+      key: 'stats-total',
       header: 'Total Tasks',
-      render: (value) => {
-        const stats = value as AgentStats['stats'];
+      render: (_value, row) => {
+        const stats = row.stats;
         return <span className={styles.stat}>{stats?.total || 0}</span>;
       },
     },
     {
-      key: 'stats',
+      key: 'stats-pending',
       header: 'Pending',
-      render: (value) => {
-        const stats = value as AgentStats['stats'];
+      render: (_value, row) => {
+        const stats = row.stats;
         return <span className={styles.statPending}>{stats?.pending || 0}</span>;
       },
     },
     {
-      key: 'stats',
+      key: 'stats-processing',
       header: 'Processing',
-      render: (value) => {
-        const stats = value as AgentStats['stats'];
+      render: (_value, row) => {
+        const stats = row.stats;
         return <span className={styles.statProcessing}>{stats?.processing || 0}</span>;
       },
     },
     {
-      key: 'stats',
+      key: 'stats-success',
       header: 'Success',
-      render: (value) => {
-        const stats = value as AgentStats['stats'];
+      render: (_value, row) => {
+        const stats = row.stats;
         return <span className={styles.statSuccess}>{stats?.success || 0}</span>;
       },
     },
     {
-      key: 'stats',
+      key: 'stats-failed',
       header: 'Failed',
-      render: (value) => {
-        const stats = value as AgentStats['stats'];
+      render: (_value, row) => {
+        const stats = row.stats;
         return <span className={styles.statFailed}>{stats?.failed || 0}</span>;
       },
     },
     {
-      key: 'stats',
+      key: 'stats-rate',
       header: 'Success Rate',
-      render: (value) => {
-        const stats = value as AgentStats['stats'];
+      render: (_value, row) => {
+        const stats = row.stats;
         if (!stats || stats.total === 0) return <span>-</span>;
         
         const successRate = ((stats.success / stats.total) * 100).toFixed(1);

@@ -83,7 +83,7 @@ export const AdminDashboard: React.FC = () => {
       render: (value) => format(new Date(value), 'MMM dd, HH:mm'),
     },
     {
-      key: 'id',
+      key: 'actions',
       header: 'Actions',
       render: (value, row) => (
         <Button

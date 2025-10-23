@@ -31,6 +31,15 @@ import type {
   UploadConfig,
   WelcomeMessage,
   HealthCheckResponse,
+  CreateUserRequest,
+  UpdateUserRequest,
+  ChangeUserPasswordRequest,
+  UserStatistics,
+  UserFilters,
+  Role,
+  ConfigDepositBank,
+  ConfigWithdrawalBank,
+  UsersResponse,
 } from '@/types';
 
 /* ==========================================
@@ -155,13 +164,28 @@ export const adminApi = {
     limit: number = 20,
     filters?: TransactionFilters
   ): Promise<PaginatedResponse<Transaction>> => {
-    const response = await apiClient.get<PaginatedResponse<Transaction>>(
-      '/admin/transactions',
-      {
-        params: { page, limit, ...filters },
-      }
-    );
-    return response.data;
+    const response = await apiClient.get<{
+      transactions: Transaction[];
+      pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        pages: number;
+      };
+    }>('/admin/transactions', {
+      params: { page, limit, ...filters },
+    });
+    
+    // Transform the response to match the expected structure
+    return {
+      data: response.data.transactions,
+      pagination: {
+        page: response.data.pagination.page,
+        limit: response.data.pagination.limit,
+        total: response.data.pagination.total,
+        totalPages: response.data.pagination.pages,
+      },
+    };
   },
 
   assignTransaction: async (id: number, data: AssignTransactionRequest): Promise<void> => {
@@ -280,6 +304,59 @@ export const adminApi = {
   deleteLanguage: async (id: number): Promise<void> => {
     await apiClient.delete(`/admin/languages/${id}`);
   },
+
+  // User Management
+  getUsers: async (
+    page: number = 1,
+    limit: number = 20,
+    filters?: UserFilters
+  ): Promise<UsersResponse> => {
+    const response = await apiClient.get<UsersResponse>(
+      '/admin/users',
+      {
+        params: { page, limit, ...filters },
+      }
+    );
+    return response.data;
+  },
+
+  getUserById: async (id: number): Promise<{ user: User }> => {
+    const response = await apiClient.get<{ user: User }>(`/admin/users/${id}`);
+    return response.data;
+  },
+
+  createUser: async (data: CreateUserRequest): Promise<{ user: User }> => {
+    const response = await apiClient.post<{ user: User }>('/admin/users', data);
+    return response.data;
+  },
+
+  updateUser: async (id: number, data: UpdateUserRequest): Promise<{ user: User }> => {
+    const response = await apiClient.put<{ user: User }>(`/admin/users/${id}`, data);
+    return response.data;
+  },
+
+  changeUserPassword: async (id: number, data: ChangeUserPasswordRequest): Promise<void> => {
+    await apiClient.put(`/admin/users/${id}/password`, data);
+  },
+
+  toggleUserStatus: async (id: number): Promise<{ user: User }> => {
+    const response = await apiClient.put<{ user: User }>(`/admin/users/${id}/toggle-status`);
+    return response.data;
+  },
+
+  deleteUser: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/users/${id}`);
+  },
+
+  getUserStatistics: async (): Promise<{ statistics: UserStatistics }> => {
+    const response = await apiClient.get<{ statistics: UserStatistics }>('/admin/users/statistics');
+    return response.data;
+  },
+
+  getRoles: async (): Promise<{ roles: Role[] }> => {
+    const response = await apiClient.get<{ roles: Role[] }>('/admin/roles');
+    return response.data;
+  },
 };
 
 /* ==========================================
@@ -332,13 +409,13 @@ export const configApi = {
     return response.data;
   },
 
-  getDepositBanks: async (): Promise<{ banks: DepositBank[] }> => {
-    const response = await apiClient.get<{ banks: DepositBank[] }>('/config/deposit-banks');
+  getDepositBanks: async (): Promise<{ banks: ConfigDepositBank[] }> => {
+    const response = await apiClient.get<{ banks: ConfigDepositBank[] }>('/config/deposit-banks');
     return response.data;
   },
 
-  getWithdrawalBanks: async (): Promise<{ banks: WithdrawalBank[] }> => {
-    const response = await apiClient.get<{ banks: WithdrawalBank[] }>(
+  getWithdrawalBanks: async (): Promise<{ banks: ConfigWithdrawalBank[] }> => {
+    const response = await apiClient.get<{ banks: ConfigWithdrawalBank[] }>(
       '/config/withdrawal-banks'
     );
     return response.data;

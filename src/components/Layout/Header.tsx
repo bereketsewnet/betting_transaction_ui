@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, User, Menu, Settings, Database, DollarSign, FileText, Globe, Users, Lock, ChevronDown } from 'lucide-react';
+import { LogOut, User, Menu, Settings, Database, DollarSign, FileText, Globe, Users, UserCog, Lock, ChevronDown, CreditCard } from 'lucide-react';
 import { useAuth } from '@/auth/AuthContext';
 import { Button } from '@/components/ui/Button/Button';
 import styles from './Header.module.css';
@@ -59,6 +59,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                 </button>
                 {showAdminMenu && (
                   <div className={styles.dropdownMenu}>
+                    <Link to="/admin/transactions" className={styles.dropdownItem}>
+                      <CreditCard size={16} />
+                      Transactions
+                    </Link>
                     <Link to="/admin/deposit-banks" className={styles.dropdownItem}>
                       <Database size={16} />
                       Deposit Banks
@@ -78,6 +82,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                     <Link to="/admin/agents" className={styles.dropdownItem}>
                       <Users size={16} />
                       Agents
+                    </Link>
+                    <Link to="/admin/users" className={styles.dropdownItem}>
+                      <UserCog size={16} />
+                      User Management
                     </Link>
                   </div>
                 )}

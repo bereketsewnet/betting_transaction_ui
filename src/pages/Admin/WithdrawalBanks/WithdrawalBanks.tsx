@@ -153,7 +153,7 @@ export const WithdrawalBanks: React.FC = () => {
       ),
     },
     {
-      key: 'id',
+      key: 'actions',
       header: 'Actions',
       render: (_value, row) => (
         <div className={styles.actions}>

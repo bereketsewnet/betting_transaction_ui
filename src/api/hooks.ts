@@ -25,6 +25,10 @@ import type {
   CreateLanguageRequest,
   CreateTemplateRequest,
   ChangePasswordRequest,
+  CreateUserRequest,
+  UpdateUserRequest,
+  ChangeUserPasswordRequest,
+  UserFilters,
 } from '@/types';
 
 /* ==========================================
@@ -53,6 +57,11 @@ export const queryKeys = {
     withdrawalBanks: ['admin', 'withdrawal-banks'] as const,
     languages: ['admin', 'languages'] as const,
     templates: ['admin', 'templates'] as const,
+    users: (page: number, limit: number, filters?: UserFilters) =>
+      ['admin', 'users', page, limit, filters] as const,
+    userDetail: (id: number) => ['admin', 'users', id] as const,
+    userStatistics: ['admin', 'users', 'statistics'] as const,
+    roles: ['admin', 'roles'] as const,
   },
   agent: {
     tasks: (page: number, limit: number, filters?: AgentTaskFilters) =>
@@ -367,6 +376,94 @@ export const useDeleteLanguage = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.languages });
       queryClient.invalidateQueries({ queryKey: queryKeys.config.languages });
     },
+  });
+};
+
+// User Management
+export const useAdminUsers = (
+  page: number = 1,
+  limit: number = 20,
+  filters?: UserFilters
+) => {
+  return useQuery({
+    queryKey: queryKeys.admin.users(page, limit, filters),
+    queryFn: () => adminApi.getUsers(page, limit, filters),
+  });
+};
+
+export const useAdminUser = (id: number) => {
+  return useQuery({
+    queryKey: queryKeys.admin.userDetail(id),
+    queryFn: () => adminApi.getUserById(id),
+  });
+};
+
+export const useCreateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateUserRequest) => adminApi.createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.userStatistics });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.agents });
+    },
+  });
+};
+
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateUserRequest }) =>
+      adminApi.updateUser(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.agents });
+    },
+  });
+};
+
+export const useChangeUserPassword = () => {
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: ChangeUserPasswordRequest }) =>
+      adminApi.changeUserPassword(id, data),
+  });
+};
+
+export const useToggleUserStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.toggleUserStatus(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.userStatistics });
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.userStatistics });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.agents });
+    },
+  });
+};
+
+export const useUserStatistics = () => {
+  return useQuery({
+    queryKey: queryKeys.admin.userStatistics,
+    queryFn: () => adminApi.getUserStatistics(),
+  });
+};
+
+export const useRoles = () => {
+  return useQuery({
+    queryKey: queryKeys.admin.roles,
+    queryFn: () => adminApi.getRoles(),
   });
 };
 

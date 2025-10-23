@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './auth/AuthContext';
+import { SocketProvider } from './providers/SocketProvider';
 import { AppRoutes } from './routes/AppRoutes';
-import { useSocket } from './hooks/useSocket';
 import './i18n';
 import './styles/global.css';
 
@@ -18,19 +18,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Socket wrapper component
-const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isConnected } = useSocket();
-
-  useEffect(() => {
-    if (isConnected) {
-      console.log('Real-time notifications enabled');
-    }
-  }, [isConnected]);
-
-  return <>{children}</>;
-};
 
 function App() {
   return (

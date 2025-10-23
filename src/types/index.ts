@@ -7,7 +7,12 @@ export interface User {
   username: string;
   email: string;
   displayName: string;
-  role: UserRole;
+  roleId: number;
+  phone?: string;
+  role: {
+    id: number;
+    name: string;
+  };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -40,6 +45,58 @@ export interface RefreshTokenResponse {
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface CreateUserRequest {
+  username: string;
+  password: string;
+  displayName: string;
+  phone?: string;
+  roleId: number;
+  isActive?: boolean;
+}
+
+export interface UpdateUserRequest {
+  username?: string;
+  displayName?: string;
+  phone?: string;
+  roleId?: number;
+  isActive?: boolean;
+}
+
+export interface ChangeUserPasswordRequest {
+  newPassword: string;
+}
+
+export interface UserStatistics {
+  totalUsers: number;
+  roleDistribution: Array<{
+    role: string;
+    count: number;
+  }>;
+}
+
+export interface UsersResponse {
+  users: User[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+  statistics: UserStatistics;
+}
+
+export interface UserFilters {
+  role?: number;
+  search?: string;
+  isActive?: boolean;
 }
 
 /* ==========================================
@@ -180,6 +237,22 @@ export interface BankField {
   label: string;
   type: 'text' | 'number' | 'email';
   required: boolean;
+}
+
+// Config API response types (simplified for public endpoints)
+export interface ConfigDepositBank {
+  id: number;
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  notes?: string;
+}
+
+export interface ConfigWithdrawalBank {
+  id: number;
+  bankName: string;
+  requiredFields: string; // JSON string that needs to be parsed
+  notes?: string;
 }
 
 export interface CreateWithdrawalBankRequest {

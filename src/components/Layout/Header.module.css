@@ -81,7 +81,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
   background-color: var(--color-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -89,6 +89,18 @@
   min-width: 200px;
   overflow: hidden;
   z-index: 200;
+  /* Add padding around the dropdown to keep hover state */
+  padding-top: 4px;
+}
+
+.dropdownMenu::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  /* Invisible bridge to keep hover state */
 }
 
 .dropdownItem {
@@ -169,7 +181,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
   background-color: var(--color-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -177,6 +189,18 @@
   min-width: 200px;
   overflow: hidden;
   z-index: 200;
+  /* Add padding around the dropdown to keep hover state */
+  padding-top: 4px;
+}
+
+.userDropdown::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  /* Invisible bridge to keep hover state */
 }
 
 .username {

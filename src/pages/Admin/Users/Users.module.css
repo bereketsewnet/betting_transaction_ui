@@ -1,0 +1,200 @@
+.container {
+  padding: var(--spacing-xl);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  min-width: 250px;
+}
+
+.filterSelect {
+  min-width: 150px;
+}
+
+.loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.error {
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.error h3 {
+  color: var(--color-error);
+  margin-bottom: var(--spacing-md);
+}
+
+.error p {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.error ul {
+  text-align: left;
+  max-width: 600px;
+  margin: var(--spacing-lg) auto;
+  list-style-position: inside;
+}
+
+.error code {
+  background-color: var(--color-surface);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-family: monospace;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.username {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.statusActive {
+  color: var(--color-success);
+  font-weight: 500;
+}
+
+.statusInactive {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
+.confirmDelete {
+  padding: var(--spacing-md);
+}
+
+.confirmDelete p {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .headerActions {
+    flex-direction: column;
+  }
+
+  .searchInput,
+  .filterSelect {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
+

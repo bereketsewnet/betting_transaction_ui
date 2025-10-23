@@ -22,14 +22,15 @@ import styles from './NewTransaction.module.css';
 const transactionSchema = z.object({
   type: z.enum(['DEPOSIT', 'WITHDRAW']),
   amount: z.string().min(1, 'Amount is required').refine((val) => !isNaN(Number(val)) && Number(val) > 0, 'Invalid amount'),
-  currency: z.string().default('USD'),
+  currency: z.string().default('ETB'),
   depositBankId: z.string().optional(),
   withdrawalBankId: z.string().optional(),
-  withdrawalAddress: z.string().optional(),
+  bankAccountNumber: z.string().optional(),
+  accountHolderName: z.string().optional(),
 }).refine(
   (data) => {
     if (data.type === 'DEPOSIT') return !!data.depositBankId;
-    if (data.type === 'WITHDRAW') return !!data.withdrawalBankId && !!data.withdrawalAddress;
+    if (data.type === 'WITHDRAW') return !!data.withdrawalBankId && !!data.bankAccountNumber && !!data.accountHolderName;
     return true;
   },
   {
@@ -62,7 +63,7 @@ export const NewTransaction: React.FC = () => {
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       type: 'DEPOSIT',
-      currency: 'USD',
+      currency: 'ETB',
     },
   });
 
@@ -110,9 +111,14 @@ export const NewTransaction: React.FC = () => {
         currency: data.currency,
         depositBankId: data.depositBankId ? parseInt(data.depositBankId) : undefined,
         withdrawalBankId: data.withdrawalBankId ? parseInt(data.withdrawalBankId) : undefined,
-        withdrawalAddress: data.withdrawalAddress,
+        // Map frontend fields to backend API
+        withdrawalAddress: data.type === 'WITHDRAW' ? 
+          `${data.bankAccountNumber} - ${data.accountHolderName}` : undefined,
         screenshot: selectedFile || undefined,
       };
+
+      // Debug: Log the data being sent
+      console.log('Transaction data being sent:', transactionData);
 
       const result = await createTransaction.mutateAsync(transactionData);
       toast.success('Transaction created successfully!');
@@ -120,7 +126,16 @@ export const NewTransaction: React.FC = () => {
         state: { playerUuid },
       });
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to create transaction');
+      console.error('Transaction creation error:', error);
+      console.error('Error response:', error.response?.data);
+      
+      // Show more specific error message
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Failed to create transaction';
+      
+      toast.error(`Transaction failed: ${errorMessage}`);
     }
   };
 
@@ -195,7 +210,8 @@ export const NewTransaction: React.FC = () => {
             <Input
               {...register('currency')}
               label="Currency"
-              defaultValue="USD"
+              defaultValue="ETB"
+              readOnly
               fullWidth
               required
             />
@@ -205,18 +221,23 @@ export const NewTransaction: React.FC = () => {
                 <Select
                   {...register('depositBankId')}
                   label="Select Bank"
-                  placeholder="Choose a bank"
+                  placeholder={loadingDepositBanks ? "Loading banks..." : "Choose a bank"}
                   options={
                     depositBanks?.banks
-                      .filter((bank) => bank.isActive)
-                      .map((bank) => ({
+                      ?.map((bank) => ({
                         value: bank.id.toString(),
                         label: `${bank.bankName} - ${bank.accountName}`,
                       })) || []
                   }
+                  disabled={loadingDepositBanks}
                   fullWidth
                   required
                 />
+                {!loadingDepositBanks && (!depositBanks?.banks || depositBanks.banks.length === 0) && (
+                  <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
+                    No deposit banks available. Please contact support.
+                  </p>
+                )}
 
                 {depositBanks?.banks.find(
                   (b) => b.id.toString() === watch('depositBankId')
@@ -256,25 +277,40 @@ export const NewTransaction: React.FC = () => {
                 <Select
                   {...register('withdrawalBankId')}
                   label="Withdrawal Method"
-                  placeholder="Choose withdrawal method"
+                  placeholder={loadingWithdrawalBanks ? "Loading methods..." : "Choose withdrawal method"}
                   options={
                     withdrawalBanks?.banks
-                      .filter((bank) => bank.isActive)
-                      .map((bank) => ({
+                      ?.map((bank) => ({
                         value: bank.id.toString(),
                         label: bank.bankName,
                       })) || []
                   }
+                  disabled={loadingWithdrawalBanks}
+                  fullWidth
+                  required
+                />
+                {!loadingWithdrawalBanks && (!withdrawalBanks?.banks || withdrawalBanks.banks.length === 0) && (
+                  <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
+                    No withdrawal methods available. Please contact support.
+                  </p>
+                )}
+
+                <Input
+                  {...register('bankAccountNumber')}
+                  label="Bank Account Number"
+                  placeholder="Enter your bank account number"
+                  error={errors.bankAccountNumber?.message}
+                  helperText="Your bank account number for receiving funds"
                   fullWidth
                   required
                 />
 
                 <Input
-                  {...register('withdrawalAddress')}
-                  label="Withdrawal Address/Account"
-                  placeholder="Enter your account details"
-                  error={errors.withdrawalAddress?.message}
-                  helperText="Enter the address or account number where you want to receive funds"
+                  {...register('accountHolderName')}
+                  label="Account Holder Name"
+                  placeholder="Enter the account holder's full name"
+                  error={errors.accountHolderName?.message}
+                  helperText="The name as it appears on your bank account"
                   fullWidth
                   required
                 />

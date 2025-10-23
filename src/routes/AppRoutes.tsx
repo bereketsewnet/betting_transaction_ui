@@ -20,12 +20,14 @@ import { TaskDetails } from '@/pages/Agent/TaskDetails/TaskDetails';
 
 // Admin Pages
 import { AdminDashboard } from '@/pages/Admin/AdminDashboard/AdminDashboard';
+import { Transactions } from '@/pages/Admin/Transactions/Transactions';
 import { TransactionDetails as AdminTransactionDetails } from '@/pages/Admin/TransactionDetails/TransactionDetails';
 import { DepositBanks } from '@/pages/Admin/DepositBanks/DepositBanks';
 import { WithdrawalBanks } from '@/pages/Admin/WithdrawalBanks/WithdrawalBanks';
 import { Templates } from '@/pages/Admin/Templates/Templates';
 import { Languages } from '@/pages/Admin/Languages/Languages';
 import { Agents } from '@/pages/Admin/Agents/Agents';
+import { Users } from '@/pages/Admin/Users/Users';
 
 // Shared Pages
 import { ChangePassword } from '@/pages/ChangePassword/ChangePassword';
@@ -68,6 +70,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <><Header /><AdminDashboard /></>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/transactions"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <><Header /><Transactions /></>
           </ProtectedRoute>
         }
       />
@@ -116,6 +126,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <><Header /><Agents /></>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <><Header /><Users /></>
           </ProtectedRoute>
         }
       />
