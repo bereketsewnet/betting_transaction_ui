@@ -354,13 +354,13 @@ export const adminApi = {
   },
 
   // Update Language
-  updateLanguage: async (id: number, data: CreateLanguageRequest): Promise<{ language: Language }> => {
-    const response = await apiClient.put<{ language: Language }>(`/admin/languages/${id}`, data);
+  updateLanguage: async (code: string, data: CreateLanguageRequest): Promise<{ language: Language }> => {
+    const response = await apiClient.put<{ language: Language }>(`/admin/languages/${code}`, data);
     return response.data;
   },
 
-  deleteLanguage: async (id: number): Promise<void> => {
-    await apiClient.delete(`/admin/languages/${id}`);
+  deleteLanguage: async (code: string): Promise<void> => {
+    await apiClient.delete(`/admin/languages/${code}`);
   },
 
   // User Management

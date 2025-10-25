@@ -23,7 +23,7 @@ type LanguageFormData = z.infer<typeof languageSchema>;
 export const Languages: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<Language | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deleteConfirmCode, setDeleteConfirmCode] = useState<string | null>(null);
 
   const { data: languagesData, isLoading } = useAdminLanguages();
   const createMutation = useCreateLanguage();
@@ -57,10 +57,10 @@ export const Languages: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (code: string) => {
     try {
-      await deleteMutation.mutateAsync(id);
-      setDeleteConfirmId(null);
+      await deleteMutation.mutateAsync(code);
+      setDeleteConfirmCode(null);
     } catch (error) {
       console.error('Delete failed:', error);
     }
@@ -69,7 +69,7 @@ export const Languages: React.FC = () => {
   const onSubmit = async (data: LanguageFormData) => {
     try {
       if (editingLanguage) {
-        await updateMutation.mutateAsync({ id: editingLanguage.id, data });
+        await updateMutation.mutateAsync({ code: editingLanguage.code, data });
       } else {
         await createMutation.mutateAsync(data);
       }
@@ -115,7 +115,7 @@ export const Languages: React.FC = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setDeleteConfirmId(row.id)}
+            onClick={() => setDeleteConfirmCode(row.code)}
           >
             <Trash2 size={16} />
           </Button>
@@ -193,18 +193,18 @@ export const Languages: React.FC = () => {
       </Modal>
 
       <Modal
-        isOpen={deleteConfirmId !== null}
-        onClose={() => setDeleteConfirmId(null)}
+        isOpen={deleteConfirmCode !== null}
+        onClose={() => setDeleteConfirmCode(null)}
         title="Confirm Delete"
       >
         <div className={styles.confirmDelete}>
           <p>Are you sure you want to delete this language?</p>
           <div className={styles.modalActions}>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+            <Button variant="outline" onClick={() => setDeleteConfirmCode(null)}>
               Cancel
             </Button>
             <Button
-              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+              onClick={() => deleteConfirmCode && handleDelete(deleteConfirmCode)}
               disabled={deleteMutation.isPending}
             >
               Delete

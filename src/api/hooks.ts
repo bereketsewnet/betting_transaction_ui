@@ -359,8 +359,8 @@ export const useDeleteTemplate = () => {
 export const useUpdateLanguage = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateLanguageRequest }) =>
-      adminApi.updateLanguage(id, data),
+    mutationFn: ({ code, data }: { code: string; data: CreateLanguageRequest }) =>
+      adminApi.updateLanguage(code, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.languages });
       queryClient.invalidateQueries({ queryKey: queryKeys.config.languages });
@@ -371,7 +371,7 @@ export const useUpdateLanguage = () => {
 export const useDeleteLanguage = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => adminApi.deleteLanguage(id),
+    mutationFn: (code: string) => adminApi.deleteLanguage(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.languages });
       queryClient.invalidateQueries({ queryKey: queryKeys.config.languages });

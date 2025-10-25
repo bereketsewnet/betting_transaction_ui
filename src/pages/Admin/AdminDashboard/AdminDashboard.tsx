@@ -207,9 +207,6 @@ export const AdminDashboard: React.FC = () => {
           <Button variant="outline" onClick={() => navigate('/admin/agents')}>
             Manage Agents
           </Button>
-          <Button variant="outline" onClick={() => navigate('/admin/config')}>
-            Configuration
-          </Button>
         </div>
       </div>
 

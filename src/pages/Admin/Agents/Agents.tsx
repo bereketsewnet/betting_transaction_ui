@@ -1,12 +1,12 @@
 import React from 'react';
 import { Users, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { useAdminAgents } from '@/api/hooks';
+import { useAdminUsers, useAdminTransactions } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { DataTable, Column } from '@/components/ui/DataTable/DataTable';
 import styles from './Agents.module.css';
 
-// Agent interface based on EXAMPLES.md line 894-922
-interface Agent {
+// Agent interface based on User data structure
+interface AgentWithStats {
   id: number;
   username: string;
   displayName: string;
@@ -22,14 +22,58 @@ interface Agent {
 }
 
 export const Agents: React.FC = () => {
-  const { data: agentsData, isLoading, error } = useAdminAgents();
+  // Get all active agents (role 8)
+  const { data: agentsData, isLoading: agentsLoading, error: agentsError } = useAdminUsers(
+    1,
+    undefined, // No limit - get all users
+    { role: 8, isActive: true } // Filter for active agents (role 8)
+  );
+
+  // Get all transactions to calculate agent statistics
+  const { data: transactionsData, isLoading: transactionsLoading } = useAdminTransactions(
+    1,
+    undefined, // No limit - get all transactions
+    {}
+  );
+
+  const isLoading = agentsLoading || transactionsLoading;
+  const error = agentsError;
 
   // Debug logging
   console.log('Agents Data:', agentsData);
+  console.log('Transactions Data:', transactionsData);
   console.log('Loading:', isLoading);
   console.log('Error:', error);
 
-  const columns: Column<Agent>[] = [
+  // Calculate agent statistics from transaction data
+  const agentsWithStats: AgentWithStats[] = React.useMemo(() => {
+    if (!agentsData?.users || !transactionsData?.data) return [];
+
+    return agentsData.users.map(agent => {
+      const agentTransactions = transactionsData.data.filter(t => 
+        t.assignedAgent?.id === agent.id
+      );
+
+      const stats = {
+        totalAssigned: agentTransactions.length,
+        pending: agentTransactions.filter(t => t.status === 'Pending' || t.status === 'PENDING').length,
+        inProgress: agentTransactions.filter(t => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length,
+        completed: agentTransactions.filter(t => t.status === 'Success' || t.status === 'SUCCESS').length,
+        failed: agentTransactions.filter(t => t.status === 'Failed' || t.status === 'FAILED').length,
+        averageRating: 0, // TODO: Calculate from transaction ratings if available
+      };
+
+      return {
+        id: agent.id,
+        username: agent.username,
+        displayName: agent.displayName || agent.username,
+        isActive: agent.isActive,
+        stats,
+      };
+    });
+  }, [agentsData?.users, transactionsData?.data]);
+
+  const columns: Column<AgentWithStats>[] = [
     {
       key: 'id',
       header: 'ID',
@@ -98,13 +142,13 @@ export const Agents: React.FC = () => {
     },
   ];
 
-  const totalStats = agentsData?.agents?.reduce(
+  const totalStats = agentsWithStats.reduce(
     (acc, agent) => ({
-      totalAssigned: acc.totalAssigned + (agent.stats?.totalAssigned || 0),
-      pending: acc.pending + (agent.stats?.pending || 0),
-      inProgress: acc.inProgress + (agent.stats?.inProgress || 0),
-      completed: acc.completed + (agent.stats?.completed || 0),
-      failed: acc.failed + (agent.stats?.failed || 0),
+      totalAssigned: acc.totalAssigned + agent.stats.totalAssigned,
+      pending: acc.pending + agent.stats.pending,
+      inProgress: acc.inProgress + agent.stats.inProgress,
+      completed: acc.completed + agent.stats.completed,
+      failed: acc.failed + agent.stats.failed,
     }),
     { totalAssigned: 0, pending: 0, inProgress: 0, completed: 0, failed: 0 }
   );
@@ -139,7 +183,7 @@ export const Agents: React.FC = () => {
               <Users size={32} className={styles.iconPrimary} />
               <div className={styles.statInfo}>
                 <span className={styles.statLabel}>Total Agents</span>
-                <span className={styles.statValue}>{agentsData?.agents?.length || 0}</span>
+                <span className={styles.statValue}>{agentsWithStats.length}</span>
               </div>
             </div>
           </CardContent>
@@ -201,14 +245,14 @@ export const Agents: React.FC = () => {
         <CardContent padding="none">
           {isLoading ? (
             <div className={styles.loading}>Loading agents...</div>
-          ) : !agentsData?.agents || agentsData.agents.length === 0 ? (
+          ) : !agentsWithStats || agentsWithStats.length === 0 ? (
             <div className={styles.empty}>
               <p>No agents found</p>
               <small>Create agent users in the User Management section</small>
             </div>
           ) : (
             <DataTable
-              data={agentsData.agents}
+              data={agentsWithStats}
               columns={columns}
               emptyMessage="No agents found"
             />
