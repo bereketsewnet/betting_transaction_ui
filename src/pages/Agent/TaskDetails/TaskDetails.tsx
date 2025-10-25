@@ -1,24 +1,23 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useTransaction, useProcessTransaction, useUploadEvidence } from '@/api/hooks';
+import { useTransaction, useProcessTransaction, useBettingSites } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { Select } from '@/components/ui/Select/Select';
-import { FileUpload } from '@/components/ui/FileUpload/FileUpload';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
-import type { TransactionStatus } from '@/types';
+import type { Transaction, TransactionStatus } from '@/types';
 import styles from './TaskDetails.module.css';
 
 const processSchema = z.object({
-  status: z.enum(['SUCCESS', 'FAILED', 'IN_PROGRESS']),
-  agentNotes: z.string().optional(),
+  status: z.enum(['PENDING', 'IN_PROGRESS', 'SUCCESS', 'FAILED']),
+  agentNotes: z.string().min(1, 'Description is required when updating status'),
 });
 
 type ProcessFormData = z.infer<typeof processSchema>;
@@ -26,12 +25,40 @@ type ProcessFormData = z.infer<typeof processSchema>;
 export const TaskDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const location = useLocation();
 
-  const { data, isLoading, refetch } = useTransaction(parseInt(id || '0'));
+  // Get transaction data from navigation state (passed from table)
+  const transactionFromState = location.state?.transaction;
+  
+  // Fallback to API call if no state data
+  const { data: apiData, isLoading, refetch, error } = useTransaction(
+    parseInt(id || '0')
+  );
+  
+  const { data: bettingSitesData } = useBettingSites();
   const processTransaction = useProcessTransaction();
-  const uploadEvidence = useUploadEvidence();
+
+  // Use transaction from state or API
+  const transaction = transactionFromState || apiData?.transaction;
+
+  // Create betting site ID to name mapping
+  const bettingSiteMap = React.useMemo(() => {
+    if (!bettingSitesData?.bettingSites) return {};
+    return bettingSitesData.bettingSites.reduce((acc, site) => {
+      acc[site.id] = site.name;
+      return acc;
+    }, {} as Record<number, string>);
+  }, [bettingSitesData]);
+
+  // Debug logging for transaction details
+  console.log('TaskDetails Debug:');
+  console.log('- Transaction from state:', transactionFromState);
+  console.log('- API data:', apiData);
+  console.log('- Final transaction:', transaction);
+  console.log('- Betting sites data:', bettingSitesData);
+  console.log('- Betting site map:', bettingSiteMap);
+  console.log('- Transaction betting site ID:', transaction?.bettingSiteId);
+  console.log('- Transaction player site ID:', transaction?.playerSiteId);
 
   const {
     register,
@@ -41,47 +68,28 @@ export const TaskDetails: React.FC = () => {
     resolver: zodResolver(processSchema),
   });
 
-  const handleUploadEvidence = async (): Promise<string | undefined> => {
-    if (!evidenceFile) return undefined;
-
-    try {
-      const result = await uploadEvidence.mutateAsync(evidenceFile);
-      toast.success('Evidence uploaded successfully');
-      return result.fileUrl;
-    } catch (error) {
-      toast.error('Failed to upload evidence');
-      return undefined;
-    }
-  };
-
   const onSubmit = async (formData: ProcessFormData) => {
     if (!id) return;
 
     try {
-      let evidenceUrl: string | undefined;
-      
-      if (evidenceFile) {
-        evidenceUrl = await handleUploadEvidence();
-      }
-
       await processTransaction.mutateAsync({
         id: parseInt(id),
         data: {
           status: formData.status as TransactionStatus,
           agentNotes: formData.agentNotes,
-          evidenceUrl,
         },
       });
 
-      toast.success('Transaction processed successfully');
+      toast.success('Transaction status updated successfully');
       refetch();
       setTimeout(() => navigate('/agent'), 1500);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to process transaction');
+      toast.error(error.response?.data?.error || 'Failed to update transaction status');
     }
   };
 
-  if (isLoading) {
+
+  if (isLoading && !transactionFromState) {
     return (
       <div className={styles.loading}>
         <div className="animate-spin" style={{
@@ -95,20 +103,49 @@ export const TaskDetails: React.FC = () => {
     );
   }
 
-  if (!data?.transaction) {
+  if (error && !transactionFromState) {
     return (
       <div className={styles.container}>
+        <div className={styles.header}>
+          <Button variant="ghost" onClick={() => navigate('/agent')}>
+            <ArrowLeft size={20} />
+            Back to Dashboard
+          </Button>
+        </div>
         <Card variant="elevated" className={styles.errorCard}>
           <CardContent>
-            <h2>Transaction Not Found</h2>
-            <Button onClick={() => navigate('/agent')}>Back to Dashboard</Button>
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <h2>Error Loading Transaction</h2>
+              <p>Failed to load transaction details. Please try again.</p>
+              <Button onClick={() => navigate('/agent')}>Back to Dashboard</Button>
+            </div>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const transaction = data.transaction;
+  if (!transaction) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <Button variant="ghost" onClick={() => navigate('/agent')}>
+            <ArrowLeft size={20} />
+            Back to Dashboard
+          </Button>
+        </div>
+        <Card variant="elevated" className={styles.errorCard}>
+          <CardContent>
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <h2>Transaction Not Found</h2>
+              <p>The transaction you're looking for doesn't exist or you don't have permission to view it.</p>
+              <Button onClick={() => navigate('/agent')}>Back to Dashboard</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   const canProcess = ['PENDING', 'IN_PROGRESS'].includes(transaction.status);
 
   return (
@@ -129,6 +166,18 @@ export const TaskDetails: React.FC = () => {
               <StatusBadge status={transaction.status} />
             </div>
             <p className={styles.transactionId}>Transaction ID: #{transaction.id}</p>
+            <div style={{ 
+              background: '#f8f9fa', 
+              border: '1px solid #dee2e6',
+              padding: '8px 12px', 
+              borderRadius: '6px', 
+              marginTop: '8px',
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              color: '#495057'
+            }}>
+              INFO: Betting Site ID: {transaction.bettingSiteId} | Player Site ID: {transaction.playerSiteId} | Site Name: {bettingSiteMap[transaction.bettingSiteId] || 'Not found'}
+            </div>
           </CardHeader>
           <CardContent>
             <div className={styles.detailsGrid}>
@@ -157,6 +206,29 @@ export const TaskDetails: React.FC = () => {
                   <code className={styles.code}>{transaction.player.playerUuid}</code>
                 </div>
               )}
+
+              <div className={styles.detailItem}>
+                <label>Betting Site</label>
+                <span>
+                  {transaction.bettingSite && transaction.bettingSite.name
+                    ? `${transaction.bettingSite.name} - ${transaction.bettingSite.website || 'No website'}`
+                    : transaction.bettingSiteId && bettingSiteMap[transaction.bettingSiteId]
+                      ? `${bettingSiteMap[transaction.bettingSiteId]} (ID: ${transaction.bettingSiteId})`
+                      : transaction.bettingSiteId 
+                        ? `Site ID: ${transaction.bettingSiteId} (Details not loaded)`
+                        : <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Unknown Site</span>
+                  }
+                </span>
+              </div>
+
+              <div className={styles.detailItem}>
+                <label>Player Site ID</label>
+                {transaction.playerSiteId ? (
+                  <code className={styles.code}>{transaction.playerSiteId}</code>
+                ) : (
+                  <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Unknown Site ID</span>
+                )}
+              </div>
 
               {transaction.type === 'DEPOSIT' && transaction.depositBank && (
                 <>
@@ -198,85 +270,55 @@ export const TaskDetails: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Process Transaction Form */}
-        {canProcess && (
-          <Card variant="elevated">
-            <CardHeader>
-              <CardTitle>Process Transaction</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-                <Select
-                  {...register('status')}
-                  label="Update Status"
-                  options={[
-                    { value: 'IN_PROGRESS', label: 'In Progress' },
-                    { value: 'SUCCESS', label: 'Success' },
-                    { value: 'FAILED', label: 'Failed' },
-                  ]}
-                  error={errors.status?.message}
-                  fullWidth
-                  required
-                />
+        {/* Status Update Form - Always Visible */}
+        <Card variant="elevated">
+          <CardHeader>
+            <CardTitle>Update Transaction Status</CardTitle>
+            <p className={styles.subtitle}>Update the status and add notes for this transaction</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+              <Select
+                {...register('status')}
+                label="Update Status"
+                options={[
+                  { value: 'PENDING', label: 'Pending' },
+                  { value: 'IN_PROGRESS', label: 'In Progress' },
+                  { value: 'SUCCESS', label: 'Success' },
+                  { value: 'FAILED', label: 'Failed' },
+                ]}
+                error={errors.status?.message}
+                fullWidth
+                required
+              />
 
-                <Input
-                  {...register('agentNotes')}
-                  label="Agent Notes"
-                  placeholder="Add notes about this transaction..."
-                  error={errors.agentNotes?.message}
-                  fullWidth
-                />
+              <Input
+                {...register('agentNotes')}
+                label="Description (Required)"
+                placeholder="Add description about this transaction status update..."
+                error={errors.agentNotes?.message}
+                fullWidth
+                required
+              />
 
-                <div>
-                  <label className={styles.label}>Upload Evidence</label>
-                  <FileUpload
-                    onFileSelect={setEvidenceFile}
-                    helperText="Upload proof of transaction processing"
-                  />
-                </div>
-
-                <div className={styles.actions}>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/agent')}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    isLoading={processTransaction.isPending || uploadEvidence.isPending}
-                  >
-                    Process Transaction
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Already Processed Info */}
-        {!canProcess && (
-          <Card variant="bordered">
-            <CardContent>
-              <div className={styles.processedInfo}>
-                <h3>Transaction Already Processed</h3>
-                {transaction.agentNotes && (
-                  <div className={styles.notes}>
-                    <label>Agent Notes:</label>
-                    <p>{transaction.agentNotes}</p>
-                  </div>
-                )}
-                {transaction.evidenceUrl && (
-                  <div className={styles.screenshot}>
-                    <label>Evidence:</label>
-                    <img src={transaction.evidenceUrl} alt="Evidence" className={styles.image} />
-                  </div>
-                )}
+              <div className={styles.actions}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/agent')}
+                >
+                  Back to Dashboard
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={processTransaction.isPending}
+                >
+                  Update Status
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

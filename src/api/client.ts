@@ -27,6 +27,7 @@ import type {
   Template,
   CreateTemplateRequest,
   AgentStats,
+  AgentStatsResponse,
   UploadResponse,
   UploadConfig,
   WelcomeMessage,
@@ -503,8 +504,8 @@ export const agentApi = {
     return response.data;
   },
 
-  getStats: async (): Promise<AgentStats> => {
-    const response = await apiClient.get<AgentStats>('/agent/stats');
+  getStats: async (): Promise<AgentStatsResponse> => {
+    const response = await apiClient.get<AgentStatsResponse>('/agent/stats');
     return response.data;
   },
 };

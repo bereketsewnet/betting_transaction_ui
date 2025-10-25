@@ -39,7 +39,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.role as UserRole)) {
     // User doesn't have required role, redirect to appropriate dashboard
     const redirectPath = user.role === 'admin' ? '/admin' : user.role === 'agent' ? '/agent' : '/';
     return <Navigate to={redirectPath} replace />;

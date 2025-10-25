@@ -313,14 +313,19 @@ export interface CreateTemplateRequest {
    ========================================== */
 
 export interface AgentStats {
-  userId: number;
-  displayName: string;
-  email: string;
   totalAssigned: number;
-  completed: number;
   pending: number;
-  successRate: number;
-  averageProcessingTime: number;
+  inProgress: number;
+  completed: number;
+  failed: number;
+  averageRating: number;
+  totalAmount: string;
+  recentActivity: number;
+}
+
+export interface AgentStatsResponse {
+  stats: AgentStats;
+  recentTransactions: Transaction[];
 }
 
 export interface AgentTask extends Transaction {

@@ -28,6 +28,12 @@
   margin-top: var(--spacing-xs);
 }
 
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
 .detailsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -118,37 +124,6 @@
   margin-top: var(--spacing-md);
 }
 
-.processedInfo {
-  text-align: center;
-}
-
-.processedInfo h3 {
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--spacing-lg);
-  color: var(--color-text-primary);
-}
-
-.notes {
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background-color: var(--color-surface);
-  border-radius: var(--radius-md);
-  text-align: left;
-}
-
-.notes label {
-  display: block;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-sm);
-}
-
-.notes p {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-  margin: 0;
-}
 
 .loading {
   display: flex;

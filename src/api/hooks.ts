@@ -64,9 +64,9 @@ export const queryKeys = {
     roles: ['admin', 'roles'] as const,
   },
   agent: {
-    tasks: (page: number, limit: number, filters?: AgentTaskFilters) =>
-      ['agent', 'tasks', page, limit, filters] as const,
-    stats: ['agent', 'stats'] as const,
+    tasks: (userId: number, page: number, limit: number, filters?: AgentTaskFilters) =>
+      ['agent', 'tasks', userId, page, limit, filters] as const,
+    stats: (userId: number) => ['agent', 'stats', userId] as const,
   },
   config: {
     welcome: (lang: string) => ['config', 'welcome', lang] as const,
@@ -536,12 +536,13 @@ export const useDeleteBettingSite = () => {
    ========================================== */
 
 export const useAgentTasks = (
+  userId: number,
   page: number = 1,
   limit: number = 10,
   filters?: AgentTaskFilters
 ) => {
   return useQuery({
-    queryKey: queryKeys.agent.tasks(page, limit, filters),
+    queryKey: queryKeys.agent.tasks(userId, page, limit, filters),
     queryFn: () => agentApi.getTasks(page, limit, filters),
   });
 };
@@ -552,7 +553,8 @@ export const useProcessTransaction = () => {
     mutationFn: ({ id, data }: { id: number; data: ProcessTransactionRequest }) =>
       agentApi.processTransaction(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agent.tasks(1, 10) });
+      // Invalidate all agent queries (will be more specific with user ID in real usage)
+      queryClient.invalidateQueries({ queryKey: ['agent'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.transaction.all });
     },
   });
@@ -564,9 +566,9 @@ export const useUploadEvidence = () => {
   });
 };
 
-export const useAgentStats = () => {
+export const useAgentStats = (userId: number) => {
   return useQuery({
-    queryKey: queryKeys.agent.stats,
+    queryKey: queryKeys.agent.stats(userId),
     queryFn: () => agentApi.getStats(),
   });
 };
