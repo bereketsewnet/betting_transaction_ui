@@ -136,16 +136,18 @@ export const NewTransaction: React.FC = () => {
         currency: data.currency,
       };
 
+      // Add betting site and player ID for both deposits and withdrawals
+      if (data.bettingSiteId) {
+        transactionData.bettingSiteId = parseInt(data.bettingSiteId);
+      }
+      if (data.playerSiteId) {
+        transactionData.playerSiteId = data.playerSiteId;
+      }
+
       // Add deposit-specific fields
       if (data.type === 'DEPOSIT') {
         if (data.depositBankId) {
           transactionData.depositBankId = parseInt(data.depositBankId);
-        }
-        if (data.bettingSiteId) {
-          transactionData.bettingSiteId = parseInt(data.bettingSiteId);
-        }
-        if (data.playerSiteId) {
-          transactionData.playerSiteId = data.playerSiteId;
         }
         if (selectedFile) {
           transactionData.screenshot = selectedFile;

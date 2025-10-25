@@ -30,7 +30,12 @@ export const AdminDashboard: React.FC = () => {
     let filtered = allTransactionsData.data;
     
     if (statusFilter) {
-      filtered = filtered.filter(t => t.status === statusFilter);
+      filtered = filtered.filter(t => {
+        // Handle both title case and uppercase status values
+        const statusUpper = t.status.toUpperCase();
+        const filterUpper = statusFilter.toUpperCase();
+        return statusUpper === filterUpper;
+      });
     }
     
     if (typeFilter) {
@@ -77,6 +82,8 @@ export const AdminDashboard: React.FC = () => {
   // Debug logging
   console.log('All transactions for stats:', allTransactionsData?.data?.length || 0);
   console.log('Agents data:', agentsData?.users?.length || 0);
+  console.log('Status filter:', statusFilter);
+  console.log('Sample transaction statuses:', allTransactionsData?.data?.slice(0, 3).map(t => t.status));
   console.log('Success rate calculation:', {
     success: stats.success,
     failed: stats.failed,

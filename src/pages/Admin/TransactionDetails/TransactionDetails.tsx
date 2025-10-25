@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import {
   useAssignTransaction,
   useUpdateTransactionStatus,
-  useAdminAgents,
+  useAdminUsers,
 } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
@@ -42,7 +42,11 @@ export const TransactionDetails: React.FC = () => {
   // Get transaction data from navigation state
   const transaction = location.state?.transaction;
 
-  const { data: agentsData } = useAdminAgents();
+  const { data: agentsData } = useAdminUsers(
+    1,
+    undefined, // No limit - get all users
+    { role: 8, isActive: true } // Filter for active agents (role 8)
+  );
   const assignTransaction = useAssignTransaction();
   const updateStatus = useUpdateTransactionStatus();
 
@@ -87,7 +91,7 @@ export const TransactionDetails: React.FC = () => {
         id: parseInt(id),
         data: {
           status: formData.status as TransactionStatus,
-          adminNotes: formData.adminNotes,
+          adminNotes: formData.adminNotes || undefined,
         },
       });
       toast.success('Status updated successfully');
@@ -134,7 +138,7 @@ export const TransactionDetails: React.FC = () => {
         </Button>
         <div className={styles.headerActions}>
           <Button variant="outline" onClick={() => setShowAssignModal(true)}>
-            Assign to Agent
+            {transaction.assignedAgent ? 'Reassign Agent' : 'Assign to Agent'}
           </Button>
           <Button onClick={() => setShowStatusModal(true)}>Update Status</Button>
         </div>
@@ -278,18 +282,19 @@ export const TransactionDetails: React.FC = () => {
       </Card>
 
       {/* Assign Modal */}
-      <Modal isOpen={showAssignModal} onClose={() => setShowAssignModal(false)} title="Assign to Agent">
+      <Modal isOpen={showAssignModal} onClose={() => setShowAssignModal(false)} title={transaction.assignedAgent ? "Reassign Agent" : "Assign to Agent"}>
         <form onSubmit={handleSubmitAssign(onAssign)}>
           <Select
             {...registerAssign('agentId')}
             label="Select Agent"
             placeholder="Choose an agent"
-            options={
-              agentsData?.agents.map((agent) => ({
-                value: agent.userId.toString(),
-                label: `${agent.displayName} (${agent.pending} pending)`,
-              })) || []
-            }
+            options={[
+              { value: '', label: 'Select an agent...' },
+              ...(agentsData?.users.map((user) => ({
+                value: user.id.toString(),
+                label: user.displayName || user.username,
+              })) || [])
+            ]}
             error={errorsAssign.agentId?.message}
             fullWidth
           />
@@ -298,7 +303,7 @@ export const TransactionDetails: React.FC = () => {
               Cancel
             </Button>
             <Button type="submit" isLoading={assignTransaction.isPending}>
-              Assign
+              {transaction.assignedAgent ? 'Reassign' : 'Assign'}
             </Button>
           </ModalFooter>
         </form>

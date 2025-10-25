@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Eye, UserPlus, CheckCircle, XCircle, Clock, Filter, Download } from 'lucide-react';
-import { useAdminTransactions, useAdminAgents, useAssignTransaction, useUpdateTransactionStatus } from '@/api/hooks';
+import { useAdminTransactions, useAdminUsers, useAssignTransaction, useUpdateTransactionStatus } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
 import { Select } from '@/components/ui/Select/Select';
@@ -38,7 +38,11 @@ export const Transactions: React.FC = () => {
   };
 
   const { data: transactionsData, isLoading, refetch } = useAdminTransactions(page, limit, filters);
-  const { data: agentsData } = useAdminAgents();
+  const { data: agentsData } = useAdminUsers(
+    1,
+    undefined, // No limit - get all users
+    { role: 8, isActive: true } // Filter for active agents (role 8)
+  );
   const assignMutation = useAssignTransaction();
   const statusMutation = useUpdateTransactionStatus();
 
@@ -249,9 +253,9 @@ export const Transactions: React.FC = () => {
               onChange={(e) => setAgentFilter(e.target.value)}
               options={[
                 { value: '', label: 'All Agents' },
-                ...(agentsData?.agents.map(agent => ({
-                  value: agent.userId.toString(),
-                  label: agent.displayName,
+                ...(agentsData?.users.map(user => ({
+                  value: user.id.toString(),
+                  label: user.displayName || user.username,
                 })) || [])
               ]}
             />
@@ -302,10 +306,13 @@ export const Transactions: React.FC = () => {
             label="Select Agent"
             value={selectedAgentId}
             onChange={(e) => setSelectedAgentId(e.target.value)}
-            options={agentsData?.agents.map(agent => ({
-              value: agent.userId.toString(),
-              label: agent.displayName,
-            })) || []}
+            options={[
+              { value: '', label: 'Select an agent...' },
+              ...(agentsData?.users.map(user => ({
+                value: user.id.toString(),
+                label: user.displayName || user.username,
+              })) || [])
+            ]}
           />
           <div className={styles.modalActions}>
             <Button variant="outline" onClick={() => setIsAssignModalOpen(false)}>
