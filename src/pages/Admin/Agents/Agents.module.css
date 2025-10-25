@@ -93,6 +93,62 @@
   color: var(--color-success);
 }
 
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error h3 {
+  color: var(--color-error);
+  margin-bottom: 0.5rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+}
+
+.empty p {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.statusActive {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.statusInactive {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.rating {
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.iconError {
+  color: var(--color-error);
+}
+
 @media (max-width: 1024px) {
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);

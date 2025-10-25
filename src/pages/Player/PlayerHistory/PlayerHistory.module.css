@@ -81,6 +81,30 @@
   margin-bottom: var(--spacing-lg);
 }
 
+.bettingSiteInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.siteName {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.playerId {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-family: monospace;
+}
+
+.noSite {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .container {

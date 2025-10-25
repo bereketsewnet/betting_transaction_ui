@@ -174,7 +174,7 @@ export const usePlayerTransactions = (playerUuid: string, page: number = 1, limi
 
 export const useAdminTransactions = (
   page: number = 1,
-  limit: number = 20,
+  limit?: number,
   filters?: TransactionFilters
 ) => {
   return useQuery({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Eye, DollarSign, TrendingUp, Clock, CheckCircle, Users } from 'lucide-react';
-import { useAdminTransactions, useAdminAgents } from '@/api/hooks';
+import { useAdminTransactions, useAdminUsers } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
 import { Select } from '@/components/ui/Select/Select';
@@ -13,39 +13,77 @@ import styles from './AdminDashboard.module.css';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | ''>('');
   const [typeFilter, setTypeFilter] = useState<TransactionType | ''>('');
-  const limit = 20;
 
-  const { data: transactionsData, isLoading } = useAdminTransactions(
-    page,
-    limit,
-    {
-      ...(statusFilter && { status: statusFilter }),
-      ...(typeFilter && { type: typeFilter }),
-    }
+  // Fetch ALL transactions for both display and statistics (no pagination)
+  const { data: allTransactionsData, isLoading } = useAdminTransactions(
+    1,
+    undefined, // No limit - get all transactions by default
+    {}
   );
 
-  const { data: agentsData } = useAdminAgents();
+  // Filter transactions for display based on selected filters
+  const filteredTransactions = React.useMemo(() => {
+    if (!allTransactionsData?.data) return [];
+    
+    let filtered = allTransactionsData.data;
+    
+    if (statusFilter) {
+      filtered = filtered.filter(t => t.status === statusFilter);
+    }
+    
+    if (typeFilter) {
+      filtered = filtered.filter(t => t.type === typeFilter);
+    }
+    
+    return filtered;
+  }, [allTransactionsData?.data, statusFilter, typeFilter]);
 
-  // Calculate stats from transactions
+  const { data: agentsData } = useAdminUsers(
+    1,
+    undefined, // No limit - get all users
+    { role: 8, isActive: true } // Filter for active agents (role 8)
+  );
+
+  // Calculate stats from ALL transactions
   const stats = React.useMemo(() => {
-    const transactions = transactionsData?.data || [];
-    const pending = transactions.filter((t) => t.status === 'PENDING').length;
-    const inProgress = transactions.filter((t) => t.status === 'IN_PROGRESS').length;
-    const success = transactions.filter((t) => t.status === 'SUCCESS').length;
-    const total = transactions.length;
-    const successRate = total > 0 ? (success / total) * 100 : 0;
+    const transactions = allTransactionsData?.data || [];
+    const users = agentsData?.users || []; // Use users instead of agents
+    
+    // Count transactions by status
+    const pending = transactions.filter((t) => t.status === 'Pending' || t.status === 'PENDING').length;
+    const inProgress = transactions.filter((t) => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length;
+    const success = transactions.filter((t) => t.status === 'Success' || t.status === 'SUCCESS').length;
+    const failed = transactions.filter((t) => t.status === 'Failed' || t.status === 'FAILED').length;
+    
+    // Calculate success rate from completed transactions (success + failed)
+    const completedTransactions = success + failed;
+    const successRate = completedTransactions > 0 ? (success / completedTransactions) * 100 : 0;
+    
+    // Count active agents (users with role 8 and isActive true)
+    const activeAgents = users.length; // Already filtered by role=8 and isActive=true
 
     return {
       pending,
       inProgress,
       success,
+      failed,
       successRate,
-      totalAgents: agentsData?.agents.length || 0,
+      totalAgents: activeAgents,
     };
-  }, [transactionsData, agentsData]);
+  }, [allTransactionsData, agentsData]);
+
+  // Debug logging
+  console.log('All transactions for stats:', allTransactionsData?.data?.length || 0);
+  console.log('Agents data:', agentsData?.users?.length || 0);
+  console.log('Success rate calculation:', {
+    success: stats.success,
+    failed: stats.failed,
+    completed: stats.success + stats.failed,
+    successRate: stats.successRate
+  });
+  console.log('Calculated stats:', stats);
 
   const columns: Column<Transaction>[] = [
     {
@@ -78,6 +116,21 @@ export const AdminDashboard: React.FC = () => {
       render: (value) => value?.displayName || '-',
     },
     {
+      key: 'bettingSite',
+      header: 'Betting Site',
+      render: (value, row) => {
+        if (row.bettingSite) {
+          return (
+            <div className={styles.bettingSiteInfo}>
+              <div className={styles.siteName}>{row.bettingSite.name}</div>
+              <div className={styles.playerId}>@{row.playerSiteId || 'Unknown'}</div>
+            </div>
+          );
+        }
+        return <span className={styles.noSite}>No site</span>;
+      },
+    },
+    {
       key: 'requestedAt',
       header: 'Requested',
       render: (value) => format(new Date(value), 'MMM dd, HH:mm'),
@@ -91,7 +144,9 @@ export const AdminDashboard: React.FC = () => {
           variant="outline"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/admin/transaction/${row.id}`);
+            navigate(`/admin/transaction/${row.id}`, {
+              state: { transaction: row },
+            });
           }}
         >
           <Eye size={16} />
@@ -201,20 +256,15 @@ export const AdminDashboard: React.FC = () => {
         </CardHeader>
         <CardContent padding="none">
           <DataTable
-            data={transactionsData?.data || []}
+            data={filteredTransactions}
             columns={columns}
             isLoading={isLoading}
             emptyMessage="No transactions found"
-            pagination={
-              transactionsData?.pagination
-                ? {
-                    currentPage: transactionsData.pagination.page,
-                    totalPages: transactionsData.pagination.totalPages,
-                    onPageChange: setPage,
-                  }
-                : undefined
+            onRowClick={(row) =>
+              navigate(`/admin/transaction/${row.id}`, {
+                state: { transaction: row },
+              })
             }
-            onRowClick={(row) => navigate(`/admin/transaction/${row.id}`)}
           />
         </CardContent>
       </Card>

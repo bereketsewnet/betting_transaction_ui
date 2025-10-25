@@ -45,6 +45,24 @@ export const PlayerHistory: React.FC = () => {
       render: (value) => <StatusBadge status={value} />,
     },
     {
+      key: 'bettingSite',
+      header: 'Betting Site',
+      render: (value, row) => (
+        <div className={styles.bettingSiteInfo}>
+          {row.bettingSite ? (
+            <>
+              <div className={styles.siteName}>{row.bettingSite.name}</div>
+              {row.playerSiteId && (
+                <div className={styles.playerId}>@{row.playerSiteId}</div>
+              )}
+            </>
+          ) : (
+            <span className={styles.noSite}>No site</span>
+          )}
+        </div>
+      ),
+    },
+    {
       key: 'requestedAt',
       header: 'Date',
       render: (value) => format(new Date(value), 'MMM dd, yyyy HH:mm'),

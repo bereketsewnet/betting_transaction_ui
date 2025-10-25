@@ -75,9 +75,15 @@ export const BettingSites: React.FC = () => {
 
   const handleToggleStatus = async (bettingSite: BettingSite) => {
     try {
-      await toggleStatus.mutateAsync(bettingSite.id);
-      toast.success(`Betting site ${bettingSite.isActive ? 'deactivated' : 'activated'} successfully`);
+      console.log('Toggling status for betting site:', bettingSite.id, 'Current status:', bettingSite.isActive);
+      const result = await toggleStatus.mutateAsync(bettingSite.id);
+      console.log('Toggle result:', result);
+      
+      // The API returns the updated betting site with the new status
+      const newStatus = result.bettingSite.isActive;
+      toast.success(`Betting site ${newStatus ? 'activated' : 'deactivated'} successfully`);
     } catch (error: any) {
+      console.error('Toggle status error:', error);
       toast.error(error.response?.data?.message || 'Failed to toggle betting site status');
     }
   };

@@ -101,18 +101,21 @@ export const playerApi = {
 
 export const transactionApi = {
   create: async (data: CreateTransactionRequest): Promise<{ transaction: Transaction }> => {
-    const formData = new FormData();
-    formData.append('playerUuid', data.playerUuid);
-    formData.append('type', data.type);
-    formData.append('amount', data.amount.toString());
-    formData.append('currency', data.currency);
+    // Check if there's a file upload
+    if (data.screenshot) {
+      // Use FormData for file uploads
+      const formData = new FormData();
+      formData.append('playerUuid', data.playerUuid);
+      formData.append('type', data.type);
+      formData.append('amount', data.amount.toString());
+      formData.append('currency', data.currency);
 
-    if (data.depositBankId) {
-      formData.append('depositBankId', data.depositBankId.toString());
-    }
-    if (data.withdrawalBankId) {
-      formData.append('withdrawalBankId', data.withdrawalBankId.toString());
-    }
+      if (data.depositBankId) {
+        formData.append('depositBankId', data.depositBankId.toString());
+      }
+      if (data.withdrawalBankId) {
+        formData.append('withdrawalBankId', data.withdrawalBankId.toString());
+      }
       if (data.withdrawalAddress) {
         formData.append('withdrawalAddress', data.withdrawalAddress);
       }
@@ -122,20 +125,54 @@ export const transactionApi = {
       if (data.playerSiteId) {
         formData.append('playerSiteId', data.playerSiteId);
       }
-      if (data.screenshot) {
-        formData.append('screenshot', data.screenshot);
+      formData.append('screenshot', data.screenshot);
+
+      const response = await apiClient.post<{ transaction: Transaction }>(
+        '/transactions',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
+    } else {
+      // Use JSON for transactions without file uploads
+      const jsonData: any = {
+        playerUuid: data.playerUuid,
+        type: data.type,
+        amount: data.amount,
+        currency: data.currency,
+      };
+
+      if (data.depositBankId) {
+        jsonData.depositBankId = data.depositBankId;
+      }
+      if (data.withdrawalBankId) {
+        jsonData.withdrawalBankId = data.withdrawalBankId;
+      }
+      if (data.withdrawalAddress) {
+        jsonData.withdrawalAddress = data.withdrawalAddress;
+      }
+      if (data.bettingSiteId) {
+        jsonData.bettingSiteId = data.bettingSiteId;
+      }
+      if (data.playerSiteId) {
+        jsonData.playerSiteId = data.playerSiteId;
       }
 
-    const response = await apiClient.post<{ transaction: Transaction }>(
-      '/transactions',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return response.data;
+      const response = await apiClient.post<{ transaction: Transaction }>(
+        '/transactions',
+        jsonData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      return response.data;
+    }
   },
 
   getById: async (id: number, playerUuid?: string): Promise<{ transaction: Transaction }> => {
@@ -144,6 +181,16 @@ export const transactionApi = {
       `/transactions/${id}`,
       { params }
     );
+    
+    // Debug logging
+    console.log('Raw transaction by ID response:', response.data);
+    console.log('Raw transaction object:', response.data.transaction);
+    if (response.data.transaction) {
+      console.log('Raw transaction bettingSite:', response.data.transaction.bettingSite);
+      console.log('Raw transaction playerSiteId:', response.data.transaction.playerSiteId);
+      console.log('Raw transaction bettingSiteId:', response.data.transaction.bettingSiteId);
+    }
+    
     return response.data;
   },
 
@@ -167,9 +214,14 @@ export const adminApi = {
   // Transactions
   getTransactions: async (
     page: number = 1,
-    limit: number = 20,
+    limit?: number,
     filters?: TransactionFilters
   ): Promise<PaginatedResponse<Transaction>> => {
+    const params: any = { page, ...filters };
+    if (limit !== undefined) {
+      params.limit = limit;
+    }
+    
     const response = await apiClient.get<{
       transactions: Transaction[];
       pagination: {
@@ -179,7 +231,7 @@ export const adminApi = {
         pages: number;
       };
     }>('/admin/transactions', {
-      params: { page, limit, ...filters },
+      params,
     });
     
     // Transform the response to match the expected structure

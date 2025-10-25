@@ -45,17 +45,17 @@ export const Landing: React.FC = () => {
           <div className={styles.heroActions}>
             <Button
               size="lg"
-              onClick={() => navigate('/player/new-transaction')}
+              onClick={() => navigate('/player/register')}
             >
-              Make a Transaction
+              Create Player Profile
               <ArrowRight size={20} />
             </Button>
             <Button
               variant="outline"
               size="lg"
-              onClick={() => navigate('/player/history')}
+              onClick={() => navigate('/player/new-transaction')}
             >
-              View Transaction History
+              Make a Transaction
             </Button>
           </div>
         </div>

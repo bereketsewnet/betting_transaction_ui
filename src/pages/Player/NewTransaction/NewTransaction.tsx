@@ -32,12 +32,16 @@ const transactionSchema = z.object({
   playerSiteId: z.string().optional(),
 }).refine(
   (data) => {
-    if (data.type === 'DEPOSIT') return !!data.depositBankId;
-    if (data.type === 'WITHDRAW') return !!data.withdrawalBankId && !!data.bankAccountNumber && !!data.accountHolderName;
+    if (data.type === 'DEPOSIT') {
+      return !!data.depositBankId && !!data.bettingSiteId && !!data.playerSiteId;
+    }
+    if (data.type === 'WITHDRAW') {
+      return !!data.withdrawalBankId && !!data.bankAccountNumber && !!data.accountHolderName;
+    }
     return true;
   },
   {
-    message: 'Please fill in all required fields',
+    message: 'For deposits: select bank, betting site, and enter player ID. For withdrawals: select bank and enter account details.',
     path: ['type'],
   }
 );
@@ -53,15 +57,25 @@ export const NewTransaction: React.FC = () => {
 
   const createPlayer = useCreatePlayer();
   const createTransaction = useCreateTransaction();
-  const { data: depositBanks, isLoading: loadingDepositBanks } = useDepositBanks();
-  const { data: withdrawalBanks, isLoading: loadingWithdrawalBanks } = useWithdrawalBanks();
-  const { data: bettingSites, isLoading: loadingBettingSites } = useBettingSites();
+  const { data: depositBanks, isLoading: loadingDepositBanks, error: depositBanksError } = useDepositBanks();
+  const { data: withdrawalBanks, isLoading: loadingWithdrawalBanks, error: withdrawalBanksError } = useWithdrawalBanks();
+  const { data: bettingSites, isLoading: loadingBettingSites, error: bettingSitesError } = useBettingSites();
   
-  // Debug logging for betting sites
+  // Debug logging for all data
+  console.log('Deposit Banks:', depositBanks);
+  console.log('Loading Deposit Banks:', loadingDepositBanks);
+  console.log('Deposit Banks Error:', depositBanksError);
+  
+  console.log('Withdrawal Banks:', withdrawalBanks);
+  console.log('Loading Withdrawal Banks:', loadingWithdrawalBanks);
+  console.log('Withdrawal Banks Error:', withdrawalBanksError);
+  
   console.log('Betting Sites in Transaction Form:', bettingSites);
   console.log('Loading Betting Sites:', loadingBettingSites);
+  console.log('Betting Sites Error:', bettingSitesError);
   console.log('Betting Sites Type:', typeof bettingSites?.bettingSites);
   console.log('Is Array:', Array.isArray(bettingSites?.bettingSites));
+  
   const { data: languages } = useLanguages();
 
   const {
@@ -114,23 +128,44 @@ export const NewTransaction: React.FC = () => {
     }
 
     try {
-      const transactionData = {
+      // Prepare transaction data according to EXAMPLES.md
+      const transactionData: any = {
         playerUuid,
         type: data.type as TransactionType,
         amount: parseFloat(data.amount),
         currency: data.currency,
-        depositBankId: data.depositBankId ? parseInt(data.depositBankId) : undefined,
-        withdrawalBankId: data.withdrawalBankId ? parseInt(data.withdrawalBankId) : undefined,
-        // Map frontend fields to backend API
-        withdrawalAddress: data.type === 'WITHDRAW' ? 
-          `${data.bankAccountNumber} - ${data.accountHolderName}` : undefined,
-        bettingSiteId: data.bettingSiteId ? parseInt(data.bettingSiteId) : undefined,
-        playerSiteId: data.playerSiteId || undefined,
-        screenshot: selectedFile || undefined,
       };
+
+      // Add deposit-specific fields
+      if (data.type === 'DEPOSIT') {
+        if (data.depositBankId) {
+          transactionData.depositBankId = parseInt(data.depositBankId);
+        }
+        if (data.bettingSiteId) {
+          transactionData.bettingSiteId = parseInt(data.bettingSiteId);
+        }
+        if (data.playerSiteId) {
+          transactionData.playerSiteId = data.playerSiteId;
+        }
+        if (selectedFile) {
+          transactionData.screenshot = selectedFile;
+        }
+      }
+
+      // Add withdrawal-specific fields
+      if (data.type === 'WITHDRAW') {
+        if (data.withdrawalBankId) {
+          transactionData.withdrawalBankId = parseInt(data.withdrawalBankId);
+        }
+        if (data.bankAccountNumber && data.accountHolderName) {
+          transactionData.withdrawalAddress = `${data.bankAccountNumber} - ${data.accountHolderName}`;
+        }
+      }
 
       // Debug: Log the data being sent
       console.log('Transaction data being sent:', transactionData);
+      console.log('Transaction type:', data.type);
+      console.log('Selected file:', selectedFile);
 
       const result = await createTransaction.mutateAsync(transactionData);
       toast.success('Transaction created successfully!');
@@ -232,25 +267,39 @@ export const NewTransaction: React.FC = () => {
             <Select
               {...register('bettingSiteId')}
               label="Betting Site"
-              options={
-                bettingSites?.bettingSites && Array.isArray(bettingSites.bettingSites)
-                  ? bettingSites.bettingSites.map(site => ({
-                      value: site.id.toString(),
-                      label: `${site.name} - ${site.website}`,
-                    }))
-                  : []
-              }
+               options={
+                 bettingSites?.bettingSites && Array.isArray(bettingSites.bettingSites)
+                   ? bettingSites.bettingSites
+                       .filter(site => site.isActive) // Only show active betting sites
+                       .map(site => ({
+                         value: site.id.toString(),
+                         label: `${site.name} - ${site.website}`,
+                       }))
+                   : []
+               }
               placeholder={loadingBettingSites ? "Loading betting sites..." : "Select betting site"}
-              helperText="Choose the betting platform where you want to deposit/withdraw"
+              helperText={transactionType === 'DEPOSIT' ? "Required for deposits - Choose the betting platform" : "Optional for withdrawals"}
               fullWidth
+              required={transactionType === 'DEPOSIT'}
             />
+            {bettingSitesError && (
+              <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
+                Error loading betting sites: {bettingSitesError.message}
+              </p>
+            )}
+            {!loadingBettingSites && !bettingSitesError && (!bettingSites?.bettingSites || bettingSites.bettingSites.length === 0) && (
+              <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
+                No betting sites available. Please contact support.
+              </p>
+            )}
 
             <Input
               {...register('playerSiteId')}
               label="Player Username/ID"
               placeholder="Enter your username or ID on the betting site"
-              helperText="Your username or ID on the selected betting site (for agent identification)"
+              helperText={transactionType === 'DEPOSIT' ? "Required for deposits - Your username/ID on the selected betting site" : "Optional for withdrawals"}
               fullWidth
+              required={transactionType === 'DEPOSIT'}
             />
 
             {transactionType === 'DEPOSIT' && (
@@ -270,7 +319,12 @@ export const NewTransaction: React.FC = () => {
                   fullWidth
                   required
                 />
-                {!loadingDepositBanks && (!depositBanks?.banks || depositBanks.banks.length === 0) && (
+                {depositBanksError && (
+                  <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
+                    Error loading banks: {depositBanksError.message}
+                  </p>
+                )}
+                {!loadingDepositBanks && !depositBanksError && (!depositBanks?.banks || depositBanks.banks.length === 0) && (
                   <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
                     No deposit banks available. Please contact support.
                   </p>
@@ -326,7 +380,12 @@ export const NewTransaction: React.FC = () => {
                   fullWidth
                   required
                 />
-                {!loadingWithdrawalBanks && (!withdrawalBanks?.banks || withdrawalBanks.banks.length === 0) && (
+                {withdrawalBanksError && (
+                  <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
+                    Error loading withdrawal methods: {withdrawalBanksError.message}
+                  </p>
+                )}
+                {!loadingWithdrawalBanks && !withdrawalBanksError && (!withdrawalBanks?.banks || withdrawalBanks.banks.length === 0) && (
                   <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>
                     No withdrawal methods available. Please contact support.
                   </p>

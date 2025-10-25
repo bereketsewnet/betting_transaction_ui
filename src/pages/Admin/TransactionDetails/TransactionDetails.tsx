@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 import { ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-  useTransaction,
   useAssignTransaction,
   useUpdateTransactionStatus,
   useAdminAgents,
@@ -36,10 +35,13 @@ type AssignFormData = z.infer<typeof assignSchema>;
 export const TransactionDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
 
-  const { data, isLoading, refetch } = useTransaction(parseInt(id || '0'));
+  // Get transaction data from navigation state
+  const transaction = location.state?.transaction;
+
   const { data: agentsData } = useAdminAgents();
   const assignTransaction = useAssignTransaction();
   const updateStatus = useUpdateTransactionStatus();
@@ -70,7 +72,8 @@ export const TransactionDetails: React.FC = () => {
       });
       toast.success('Transaction assigned successfully');
       setShowAssignModal(false);
-      refetch();
+      // Navigate back to transactions list to refresh data
+      navigate('/admin/transactions');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to assign transaction');
     }
@@ -89,40 +92,38 @@ export const TransactionDetails: React.FC = () => {
       });
       toast.success('Status updated successfully');
       setShowStatusModal(false);
-      refetch();
+      // Navigate back to transactions list to refresh data
+      navigate('/admin/transactions');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to update status');
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className="animate-spin" style={{
-          width: '48px',
-          height: '48px',
-          border: '4px solid var(--color-border)',
-          borderTopColor: 'var(--color-primary)',
-          borderRadius: '50%',
-        }} />
-      </div>
-    );
-  }
-
-  if (!data?.transaction) {
+  if (!transaction) {
     return (
       <div className={styles.container}>
         <Card variant="elevated" className={styles.errorCard}>
           <CardContent>
             <h2>Transaction Not Found</h2>
-            <Button onClick={() => navigate('/admin')}>Back to Dashboard</Button>
+            <p>The requested transaction could not be found. Please navigate from the transactions list.</p>
+            <Button onClick={() => navigate('/admin/transactions')}>
+              Back to Transactions
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const transaction = data.transaction;
+  // Debug logging for transaction data
+  console.log('Transaction data:', transaction);
+  console.log('Betting site:', transaction.bettingSite);
+  console.log('Player site ID:', transaction.playerSiteId);
+  console.log('Betting site ID:', transaction.bettingSiteId);
+  console.log('All transaction keys:', Object.keys(transaction));
+  console.log('Transaction type:', typeof transaction);
+  console.log('Betting site type:', typeof transaction.bettingSite);
+  console.log('Player site ID type:', typeof transaction.playerSiteId);
 
   return (
     <div className={styles.container}>
@@ -186,6 +187,27 @@ export const TransactionDetails: React.FC = () => {
                 <code className={styles.code}>{transaction.player.playerUuid}</code>
               </div>
             )}
+
+            <div className={styles.detailItem}>
+              <label>Betting Site</label>
+              <span>
+                {transaction.bettingSite && transaction.bettingSite.name
+                  ? `${transaction.bettingSite.name} - ${transaction.bettingSite.website || 'No website'}`
+                  : transaction.bettingSiteId 
+                    ? `Site ID: ${transaction.bettingSiteId} (Details not loaded)`
+                    : <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Unknown Site</span>
+                }
+              </span>
+            </div>
+
+            <div className={styles.detailItem}>
+              <label>Player Site ID</label>
+              {transaction.playerSiteId ? (
+                <code className={styles.code}>{transaction.playerSiteId}</code>
+              ) : (
+                <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Unknown Site ID</span>
+              )}
+            </div>
 
             {transaction.assignedAgent && (
               <div className={styles.detailItem}>

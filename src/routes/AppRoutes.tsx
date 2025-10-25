@@ -10,6 +10,7 @@ import { Landing } from '@/pages/Landing/Landing';
 import { Login } from '@/pages/Login/Login';
 
 // Player Pages
+import { PlayerRegistration } from '@/pages/Player/PlayerRegistration/PlayerRegistration';
 import { NewTransaction } from '@/pages/Player/NewTransaction/NewTransaction';
 import { PlayerHistory } from '@/pages/Player/PlayerHistory/PlayerHistory';
 import { TransactionDetails as PlayerTransactionDetails } from '@/pages/Player/TransactionDetails/TransactionDetails';
@@ -42,6 +43,7 @@ export const AppRoutes: React.FC = () => {
 
       {/* Player Routes (Public) */}
       <Route path="/player">
+        <Route path="register" element={<><Header /><PlayerRegistration /></>} />
         <Route path="new-transaction" element={<><Header /><NewTransaction /></>} />
         <Route path="history" element={<><Header /><PlayerHistory /></>} />
         <Route path="transaction/:id" element={<><Header /><PlayerTransactionDetails /></>} />

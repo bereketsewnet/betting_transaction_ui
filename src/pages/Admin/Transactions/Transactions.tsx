@@ -26,8 +26,9 @@ export const Transactions: React.FC = () => {
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const [newStatus, setNewStatus] = useState<TransactionStatus>('PENDING');
   const [adminNotes, setAdminNotes] = useState('');
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
 
-  const limit = 20;
+  const limit = showAllTransactions ? 1000 : 20;
 
   const filters = {
     ...(statusFilter && { status: statusFilter }),
@@ -110,6 +111,24 @@ export const Transactions: React.FC = () => {
       render: (value) => value?.displayName || '-',
     },
     {
+      key: 'bettingSite',
+      header: 'Betting Site',
+      render: (value, row) => (
+        <div className={styles.bettingSiteInfo}>
+          {row.bettingSite ? (
+            <>
+              <div className={styles.siteName}>{row.bettingSite.name}</div>
+              {row.playerSiteId && (
+                <div className={styles.playerId}>@{row.playerSiteId}</div>
+              )}
+            </>
+          ) : (
+            <span className={styles.noSite}>No site</span>
+          )}
+        </div>
+      ),
+    },
+    {
       key: 'requestedAt',
       header: 'Requested',
       render: (value) => format(new Date(value), 'MMM dd, HH:mm'),
@@ -124,7 +143,9 @@ export const Transactions: React.FC = () => {
             variant="outline"
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/admin/transaction/${row.id}`);
+              navigate(`/admin/transaction/${row.id}`, {
+                state: { transaction: row },
+              });
             }}
             title="View Details"
           >
@@ -170,6 +191,12 @@ export const Transactions: React.FC = () => {
           <p className={styles.subtitle}>Manage all transactions, assign agents, and update status</p>
         </div>
         <div className={styles.headerActions}>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAllTransactions(!showAllTransactions)}
+          >
+            {showAllTransactions ? 'Show Less' : 'See More'}
+          </Button>
           <Button variant="outline" onClick={() => navigate('/admin/agents')}>
             Manage Agents
           </Button>
@@ -254,7 +281,11 @@ export const Transactions: React.FC = () => {
                   }
                 : undefined
             }
-            onRowClick={(row) => navigate(`/admin/transaction/${row.id}`)}
+            onRowClick={(row) =>
+              navigate(`/admin/transaction/${row.id}`, {
+                state: { transaction: row },
+              })
+            }
           />
         </CardContent>
       </Card>

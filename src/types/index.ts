@@ -141,6 +141,8 @@ export interface Transaction {
   depositBankId?: number;
   withdrawalBankId?: number;
   withdrawalAddress?: string;
+  bettingSiteId?: number;
+  playerSiteId?: string;
   screenshotUrl?: string;
   evidenceUrl?: string;
   agentNotes?: string;
@@ -153,6 +155,7 @@ export interface Transaction {
   player?: Player;
   depositBank?: DepositBank;
   withdrawalBank?: WithdrawalBank;
+  bettingSite?: BettingSite;
   assignedAgent?: User;
 }
 
