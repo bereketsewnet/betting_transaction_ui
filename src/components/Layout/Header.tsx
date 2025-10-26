@@ -16,6 +16,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
   const location = useLocation();
   const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showPlayerMenu, setShowPlayerMenu] = useState(false);
+  
+  // Check if player is logged in (has playerUuid in localStorage)
+  const playerUuid = localStorage.getItem('playerUuid');
 
   const handleLogout = async () => {
     await logout();
@@ -108,6 +112,30 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
               </Link>
             </nav>
           )}
+          
+          {/* Player Navigation (when logged in as player) */}
+          {!isAuthenticated && playerUuid && (
+            <nav className={styles.nav}>
+              <Link 
+                to="/player/dashboard" 
+                className={`${styles.navLink} ${isActive('/player/dashboard') ? styles.active : ''}`}
+              >
+                Dashboard
+              </Link>
+              <Link 
+                to="/player/new-transaction" 
+                className={`${styles.navLink} ${isActive('/player/new-transaction') ? styles.active : ''}`}
+              >
+                New Transaction
+              </Link>
+              <Link 
+                to="/player/history" 
+                className={`${styles.navLink} ${isActive('/player/history') ? styles.active : ''}`}
+              >
+                History
+              </Link>
+            </nav>
+          )}
         </div>
 
         <div className={styles.right}>
@@ -138,6 +166,37 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                 )}
               </div>
             </>
+          ) : playerUuid ? (
+            <div 
+              className={styles.userMenu}
+              onMouseEnter={() => setShowPlayerMenu(true)}
+              onMouseLeave={() => setShowPlayerMenu(false)}
+            >
+              <button className={styles.userInfo}>
+                <User size={20} />
+                <span className={styles.username}>Player</span>
+                <ChevronDown size={16} />
+              </button>
+              {showPlayerMenu && (
+                <div className={styles.userDropdown}>
+                  <Link to="/player/dashboard" className={styles.dropdownItem}>
+                    <Database size={16} />
+                    Dashboard
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      localStorage.removeItem('playerUuid');
+                      navigate('/');
+                      window.location.reload();
+                    }} 
+                    className={styles.dropdownItem}
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
               Login

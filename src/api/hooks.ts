@@ -48,6 +48,8 @@ export const queryKeys = {
     detail: (id: number) => ['transactions', id] as const,
     byPlayer: (uuid: string, page: number, limit: number) =>
       ['transactions', 'player', uuid, page, limit] as const,
+    byTempId: (tempId: string, page: number, limit: number) =>
+      ['transactions', 'temp', tempId, page, limit] as const,
   },
   admin: {
     transactions: (page: number, limit: number, filters?: TransactionFilters) =>
@@ -120,6 +122,12 @@ export const useCreatePlayer = () => {
   });
 };
 
+export const useCreatePlayerExtended = () => {
+  return useMutation({
+    mutationFn: (data: CreatePlayerRequest) => playerApi.register(data),
+  });
+};
+
 export const usePlayer = (uuid: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: queryKeys.player.detail(uuid),
@@ -165,6 +173,14 @@ export const usePlayerTransactions = (playerUuid: string, page: number = 1, limi
     queryKey: queryKeys.transaction.byPlayer(playerUuid, page, limit),
     queryFn: () => transactionApi.getByPlayer(playerUuid, page, limit),
     enabled: !!playerUuid,
+  });
+};
+
+export const useTempIdTransactions = (tempId: string, page: number = 1, limit: number = 10) => {
+  return useQuery({
+    queryKey: queryKeys.transaction.byTempId(tempId, page, limit),
+    queryFn: () => transactionApi.getByTempId(tempId, page, limit),
+    enabled: !!tempId,
   });
 };
 

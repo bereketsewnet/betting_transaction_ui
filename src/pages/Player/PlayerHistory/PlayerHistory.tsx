@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Eye } from 'lucide-react';
-import { usePlayerTransactions } from '@/api/hooks';
+import { usePlayerTransactions, useTempIdTransactions } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
 import { DataTable, Column } from '@/components/ui/DataTable/DataTable';
@@ -16,8 +16,25 @@ export const PlayerHistory: React.FC = () => {
   const limit = 10;
 
   const playerUuid = localStorage.getItem('playerUuid');
-
-  const { data, isLoading } = usePlayerTransactions(playerUuid || '', page, limit);
+  const tempId = localStorage.getItem('tempId');
+  
+  // Use appropriate hook based on whether we have playerUuid or tempId
+  const { data: playerData, isLoading: playerLoading } = usePlayerTransactions(
+    playerUuid || '', 
+    page, 
+    limit
+  );
+  
+  const { data: tempData, isLoading: tempLoading } = useTempIdTransactions(
+    tempId || '', 
+    page, 
+    limit
+  );
+  
+  // Use the appropriate data source
+  const data = playerUuid ? playerData : tempData;
+  const isLoading = playerUuid ? playerLoading : tempLoading;
+  const idToUse = playerUuid || tempId;
 
   const columns: Column<Transaction>[] = [
     {
@@ -77,7 +94,7 @@ export const PlayerHistory: React.FC = () => {
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/player/transaction/${row.id}`, {
-              state: { playerUuid },
+              state: { playerUuid: idToUse, tempId: tempId || undefined },
             });
           }}
         >
@@ -88,12 +105,12 @@ export const PlayerHistory: React.FC = () => {
     },
   ];
 
-  if (!playerUuid) {
+  if (!idToUse) {
     return (
       <div className={styles.container}>
         <Card variant="elevated" className={styles.errorCard}>
           <CardContent>
-            <h2>No Player Profile Found</h2>
+            <h2>No Profile Found</h2>
             <p>Please create a transaction first to view your history.</p>
             <Button onClick={() => navigate('/player/new-transaction')}>
               Create Transaction
@@ -119,7 +136,7 @@ export const PlayerHistory: React.FC = () => {
       <Card variant="bordered">
         <CardContent padding="none">
           <DataTable
-            data={data?.data || []}
+            data={data?.transactions || data?.data || []}
             columns={columns}
             isLoading={isLoading}
             emptyMessage="No transactions found"
@@ -127,14 +144,14 @@ export const PlayerHistory: React.FC = () => {
               data?.pagination
                 ? {
                     currentPage: data.pagination.page,
-                    totalPages: data.pagination.totalPages,
+                    totalPages: data.pagination.pages || data.pagination.totalPages,
                     onPageChange: setPage,
                   }
                 : undefined
             }
             onRowClick={(row) =>
               navigate(`/player/transaction/${row.id}`, {
-                state: { playerUuid },
+                state: { playerUuid: idToUse, tempId: tempId || undefined },
               })
             }
           />
@@ -148,12 +165,22 @@ export const PlayerHistory: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className={styles.infoItem}>
-              <strong>Player UUID:</strong>
-              <code className={styles.uuid}>{playerUuid}</code>
+              <strong>{playerUuid ? 'Player UUID:' : 'Temporary ID:'}</strong>
+              <code className={styles.uuid}>{idToUse}</code>
             </div>
             <p className={styles.infoText}>
-              Save your Player UUID to access your transactions later.
+              {playerUuid 
+                ? 'Save your Player UUID to access your transactions later.'
+                : 'This is a temporary ID. Create an account to save your transaction history permanently.'}
             </p>
+            {tempId && !playerUuid && (
+              <Button 
+                onClick={() => navigate('/player/register')} 
+                style={{ marginTop: '1rem' }}
+              >
+                Create Account
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>

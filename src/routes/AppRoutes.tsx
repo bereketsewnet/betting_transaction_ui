@@ -10,10 +10,13 @@ import { Landing } from '@/pages/Landing/Landing';
 import { Login } from '@/pages/Login/Login';
 
 // Player Pages
+import { PlayerLanding } from '@/pages/Player/PlayerLanding/PlayerLanding';
 import { PlayerRegistration } from '@/pages/Player/PlayerRegistration/PlayerRegistration';
+import { PlayerDashboard } from '@/pages/Player/PlayerDashboard/PlayerDashboard';
 import { NewTransaction } from '@/pages/Player/NewTransaction/NewTransaction';
 import { PlayerHistory } from '@/pages/Player/PlayerHistory/PlayerHistory';
 import { TransactionDetails as PlayerTransactionDetails } from '@/pages/Player/TransactionDetails/TransactionDetails';
+import { TempIdLookup } from '@/pages/Player/TempIdLookup/TempIdLookup';
 
 // Agent Pages
 import { AgentDashboard } from '@/pages/Agent/AgentDashboard/AgentDashboard';
@@ -43,10 +46,13 @@ export const AppRoutes: React.FC = () => {
 
       {/* Player Routes (Public) */}
       <Route path="/player">
+        <Route path="landing" element={<><Header /><PlayerLanding /></>} />
         <Route path="register" element={<><Header /><PlayerRegistration /></>} />
+        <Route path="dashboard" element={<><Header /><PlayerDashboard /></>} />
         <Route path="new-transaction" element={<><Header /><NewTransaction /></>} />
         <Route path="history" element={<><Header /><PlayerHistory /></>} />
         <Route path="transaction/:id" element={<><Header /><PlayerTransactionDetails /></>} />
+        <Route path="temp-lookup/:tempId" element={<><Header /><TempIdLookup /></>} />
       </Route>
 
       {/* Agent Routes (Protected) */}

@@ -82,6 +82,11 @@ export const playerApi = {
     return response.data;
   },
 
+  register: async (data: CreatePlayerRequest): Promise<{ player: Player }> => {
+    const response = await apiClient.post<{ player: Player }>('/players/register', data);
+    return response.data;
+  },
+
   getByUuid: async (playerUuid: string): Promise<{ player: Player }> => {
     const response = await apiClient.get<{ player: Player }>(`/players/${playerUuid}`);
     return response.data;
@@ -203,6 +208,20 @@ export const transactionApi = {
     const response = await apiClient.get<PaginatedResponse<Transaction>>('/transactions', {
       params: { playerUuid, page, limit },
     });
+    return response.data;
+  },
+
+  getByTempId: async (
+    tempId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ transactions: Transaction[]; pagination: Pagination; playerInfo: any }> => {
+    const response = await apiClient.get<{ transactions: Transaction[]; pagination: Pagination; playerInfo: any }>(
+      '/transactions/temp',
+      {
+        params: { tempId, page, limit },
+      }
+    );
     return response.data;
   },
 };

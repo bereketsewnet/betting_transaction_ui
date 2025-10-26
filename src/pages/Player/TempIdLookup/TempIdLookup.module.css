@@ -1,0 +1,186 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.headerInfo {
+  flex: 1;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+}
+
+.tempId {
+  font-family: monospace;
+  background: var(--color-background-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.playerInfoCard {
+  margin-bottom: 2rem;
+}
+
+.playerInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.playerDetails h3 {
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.playerDetails p {
+  margin: 0.25rem 0;
+  color: var(--color-text-secondary);
+}
+
+.status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status.temporary {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.registered {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.playerActions {
+  flex-shrink: 0;
+}
+
+.cardSubtitle {
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.type {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.type.deposit {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.type.withdraw {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.amount {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.errorCard {
+  margin-top: 2rem;
+}
+
+.errorContent {
+  text-align: center;
+  padding: 2rem;
+}
+
+.errorIcon {
+  color: var(--color-error);
+  margin-bottom: 1rem;
+}
+
+.errorContent h2 {
+  margin-bottom: 1rem;
+  color: var(--color-text-primary);
+}
+
+.errorContent p {
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.errorActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.info {
+  margin-top: 2rem;
+}
+
+.infoCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.infoCard h4 {
+  margin-bottom: 0.25rem;
+  color: var(--color-text-primary);
+}
+
+.infoCard p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .playerInfo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .errorActions {
+    flex-direction: column;
+  }
+}

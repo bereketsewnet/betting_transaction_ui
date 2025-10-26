@@ -30,10 +30,11 @@ const transactionSchema = z.object({
   accountHolderName: z.string().optional(),
   bettingSiteId: z.string().optional(),
   playerSiteId: z.string().optional(),
+  tempPlayerId: z.string().optional(), // Optional player ID for temp transactions
 }).refine(
   (data) => {
     if (data.type === 'DEPOSIT') {
-      return !!data.depositBankId && !!data.bettingSiteId && !!data.playerSiteId;
+      return !!data.depositBankId && !!data.bettingSiteId;
     }
     if (data.type === 'WITHDRAW') {
       return !!data.withdrawalBankId && !!data.bankAccountNumber && !!data.accountHolderName;
@@ -41,17 +42,23 @@ const transactionSchema = z.object({
     return true;
   },
   {
-    message: 'For deposits: select bank, betting site, and enter player ID. For withdrawals: select bank and enter account details.',
+    message: 'For deposits: select bank and betting site. For withdrawals: select bank and enter account details.',
     path: ['type'],
   }
 );
 
 type TransactionFormData = z.infer<typeof transactionSchema>;
 
+// Generate a temporary ID for anonymous transactions
+const generateTempId = (): string => {
+  return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
 export const NewTransaction: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [playerUuid, setPlayerUuid] = useState<string | null>(null);
+  const [tempId, setTempId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [languageCode, setLanguageCode] = useState('en');
 
@@ -93,12 +100,21 @@ export const NewTransaction: React.FC = () => {
 
   const transactionType = watch('type');
 
-  // Check if player exists in localStorage
+  // Check if player exists in localStorage, if not, create temp ID
   useEffect(() => {
     const storedPlayerUuid = localStorage.getItem('playerUuid');
     if (storedPlayerUuid) {
+      // User is registered - use existing UUID and skip to transaction form
+      console.log('✅ Using existing playerUuid:', storedPlayerUuid);
       setPlayerUuid(storedPlayerUuid);
-      setStep(2);
+      setStep(2); // Skip language setup for registered users
+    } else {
+      // Anonymous user - generate temp ID for later
+      console.log('ℹ️ No playerUuid found, preparing for anonymous transaction');
+      const newTempId = generateTempId();
+      setTempId(newTempId);
+      localStorage.setItem('tempId', newTempId);
+      // Stay on step 1 to show language setup for anonymous users
     }
   }, []);
 
@@ -122,15 +138,18 @@ export const NewTransaction: React.FC = () => {
   };
 
   const onSubmit = async (data: TransactionFormData) => {
-    if (!playerUuid) {
-      toast.error('Player profile not found');
+    // Use tempId if playerUuid is not available (anonymous transaction)
+    const idToUse = playerUuid || tempId;
+    
+    if (!idToUse) {
+      toast.error('Unable to create transaction. Please try again.');
       return;
     }
 
     try {
       // Prepare transaction data according to EXAMPLES.md
       const transactionData: any = {
-        playerUuid,
+        playerUuid: idToUse, // This will be playerUuid or tempId
         type: data.type as TransactionType,
         amount: parseFloat(data.amount),
         currency: data.currency,
@@ -171,9 +190,17 @@ export const NewTransaction: React.FC = () => {
 
       const result = await createTransaction.mutateAsync(transactionData);
       toast.success('Transaction created successfully!');
-      navigate(`/player/transaction/${result.transaction.id}`, {
-        state: { playerUuid },
-      });
+      
+      // If using temp ID, navigate to temp lookup
+      if (tempId) {
+        navigate(`/player/temp-lookup/${tempId}`, {
+          state: { tempId },
+        });
+      } else {
+        navigate(`/player/transaction/${result.transaction.id}`, {
+          state: { playerUuid },
+        });
+      }
     } catch (error: any) {
       console.error('Transaction creation error:', error);
       console.error('Error response:', error.response?.data);
@@ -269,16 +296,16 @@ export const NewTransaction: React.FC = () => {
             <Select
               {...register('bettingSiteId')}
               label="Betting Site"
-               options={
-                 bettingSites?.bettingSites && Array.isArray(bettingSites.bettingSites)
-                   ? bettingSites.bettingSites
-                       .filter(site => site.isActive) // Only show active betting sites
-                       .map(site => ({
-                         value: site.id.toString(),
-                         label: `${site.name} - ${site.website}`,
-                       }))
-                   : []
-               }
+                options={
+                  bettingSites?.bettingSites && Array.isArray(bettingSites.bettingSites)
+                    ? bettingSites.bettingSites
+                        .filter((site: any) => site.isActive) // Only show active betting sites
+                        .map((site: any) => ({
+                          value: site.id.toString(),
+                          label: `${site.name} - ${site.website}`,
+                        }))
+                    : []
+                }
               placeholder={loadingBettingSites ? "Loading betting sites..." : "Select betting site"}
               helperText={transactionType === 'DEPOSIT' ? "Required for deposits - Choose the betting platform" : "Optional for withdrawals"}
               fullWidth
@@ -297,11 +324,10 @@ export const NewTransaction: React.FC = () => {
 
             <Input
               {...register('playerSiteId')}
-              label="Player Username/ID"
+              label="Player Username/ID (Optional)"
               placeholder="Enter your username or ID on the betting site"
-              helperText={transactionType === 'DEPOSIT' ? "Required for deposits - Your username/ID on the selected betting site" : "Optional for withdrawals"}
+              helperText={transactionType === 'DEPOSIT' ? "Optional - Your username/ID on the selected betting site" : "Optional for withdrawals"}
               fullWidth
-              required={transactionType === 'DEPOSIT'}
             />
 
             {transactionType === 'DEPOSIT' && (
