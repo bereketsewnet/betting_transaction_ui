@@ -100,9 +100,14 @@ export const PlayerDashboard: React.FC = () => {
           acc.withdrawalCount++;
         }
 
-        if (transaction.status === 'PENDING') acc.pendingCount++;
-        if (transaction.status === 'COMPLETED') acc.completedCount++;
-        if (transaction.status === 'REJECTED') acc.rejectedCount++;
+        // Handle different status formats from backend
+        const status = transaction.status?.toUpperCase().replace(/ /g, '_');
+        // Group PENDING and IN_PROGRESS (or IN PROGRESS) together
+        if (status === 'PENDING' || status === 'IN_PROGRESS') acc.pendingCount++;
+        // Group failed/cancelled/rejected together
+        if (status === 'REJECTED' || status === 'FAILED' || status === 'CANCELLED') acc.rejectedCount++;
+        // Success/Completed
+        if (status === 'SUCCESS' || status === 'COMPLETED') acc.completedCount++;
 
         return acc;
       },
@@ -143,14 +148,22 @@ export const PlayerDashboard: React.FC = () => {
     {
       key: 'status' as const,
       header: 'Status',
-      render: (value: string) => (
-        <span className={`${styles.statusBadge} ${styles[value.toLowerCase()]}`}>
-          {value === 'PENDING' && <Clock size={14} />}
-          {value === 'COMPLETED' && <CheckCircle size={14} />}
-          {value === 'REJECTED' && <XCircle size={14} />}
-          {value}
-        </span>
-      ),
+      render: (value: string) => {
+        const status = value?.toUpperCase().replace(/ /g, '_');
+        // Format status display: convert underscores to spaces and capitalize
+        const displayStatus = value ? value.replace(/_/g, ' ').split(' ').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ') : value;
+        
+        return (
+          <span className={`${styles.statusBadge} ${styles[status?.toLowerCase()] || ''}`}>
+            {(status === 'PENDING' || status === 'IN_PROGRESS') && <Clock size={14} />}
+            {(status === 'SUCCESS' || status === 'COMPLETED') && <CheckCircle size={14} />}
+            {(status === 'REJECTED' || status === 'FAILED' || status === 'CANCELLED') && <XCircle size={14} />}
+            {displayStatus}
+          </span>
+        );
+      },
     },
     {
       key: 'createdAt' as const,
@@ -239,7 +252,9 @@ export const PlayerDashboard: React.FC = () => {
               <Clock size={24} />
             </div>
             <div className={styles.statInfo}>
-              <p className={styles.statLabel}>Pending</p>
+              <p className={styles.statLabel}>
+                Pending/In Progress
+              </p>
               <h3 className={styles.statValue}>{stats.pendingCount}</h3>
             </div>
           </CardContent>
@@ -263,7 +278,9 @@ export const PlayerDashboard: React.FC = () => {
               <XCircle size={24} />
             </div>
             <div className={styles.statInfo}>
-              <p className={styles.statLabel}>Rejected</p>
+              <p className={styles.statLabel}>
+                Failed/Cancelled
+              </p>
               <h3 className={styles.statValue}>{stats.rejectedCount}</h3>
             </div>
           </CardContent>

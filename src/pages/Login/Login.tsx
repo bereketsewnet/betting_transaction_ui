@@ -48,6 +48,10 @@ export const Login: React.FC = () => {
           navigate('/admin');
         } else if (userRole === 'agent') {
           navigate('/agent');
+        } else if (userRole === 'player') {
+          // Players should use the landing page login
+          toast.info('Please use the Player Login from the landing page');
+          navigate('/');
         } else {
           navigate('/');
         }
