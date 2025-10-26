@@ -17,6 +17,7 @@ import { NewTransaction } from '@/pages/Player/NewTransaction/NewTransaction';
 import { PlayerHistory } from '@/pages/Player/PlayerHistory/PlayerHistory';
 import { TransactionDetails as PlayerTransactionDetails } from '@/pages/Player/TransactionDetails/TransactionDetails';
 import { TempIdLookup } from '@/pages/Player/TempIdLookup/TempIdLookup';
+import { PlayerChangePassword } from '@/pages/Player/ChangePassword/ChangePassword';
 
 // Agent Pages
 import { AgentDashboard } from '@/pages/Agent/AgentDashboard/AgentDashboard';
@@ -53,6 +54,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="history" element={<><Header /><PlayerHistory /></>} />
         <Route path="transaction/:id" element={<><Header /><PlayerTransactionDetails /></>} />
         <Route path="temp-lookup/:tempId" element={<><Header /><TempIdLookup /></>} />
+        <Route path="change-password" element={<><Header /><PlayerChangePassword /></>} />
       </Route>
 
       {/* Agent Routes (Protected) */}

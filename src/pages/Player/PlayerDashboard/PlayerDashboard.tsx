@@ -14,8 +14,8 @@ import {
   XCircle,
   AlertCircle,
   LogOut,
-  User,
-  Database
+  Database,
+  Lock
 } from 'lucide-react';
 import styles from './PlayerDashboard.module.css';
 
@@ -71,6 +71,9 @@ export const PlayerDashboard: React.FC = () => {
     page,
     limit
   );
+  
+  // Extract transactions array from paginated response
+  const transactions = (data as any)?.transactions || [];
 
   const handleLogout = () => {
     localStorage.removeItem('playerUuid');
@@ -79,7 +82,9 @@ export const PlayerDashboard: React.FC = () => {
 
   // Calculate statistics - counts only, no money amounts
   const stats = React.useMemo(() => {
-    if (!data?.transactions) {
+    const transactions = (data as any)?.transactions || [];
+    
+    if (transactions.length === 0) {
       return {
         totalTransactions: 0,
         depositCount: 0,
@@ -90,8 +95,8 @@ export const PlayerDashboard: React.FC = () => {
       };
     }
 
-    return data.transactions.reduce(
-      (acc, transaction) => {
+    return transactions.reduce(
+      (acc: any, transaction: any) => {
         acc.totalTransactions++;
         
         if (transaction.type === 'DEPOSIT') {
@@ -190,11 +195,11 @@ export const PlayerDashboard: React.FC = () => {
           <div className={styles.headerActions}>
             <Button
               variant="outline"
-              onClick={() => navigate('/player/profile')}
+              onClick={() => navigate('/player/change-password')}
               className={styles.profileButton}
             >
-              <User size={18} />
-              Profile
+              <Lock size={18} />
+              Change Password
             </Button>
             <Button
               variant="outline"
@@ -304,7 +309,7 @@ export const PlayerDashboard: React.FC = () => {
         <CardContent>
           {isLoading ? (
             <div className={styles.loading}>Loading transactions...</div>
-          ) : !data?.transactions || data.transactions.length === 0 ? (
+          ) : transactions.length === 0 ? (
             <div className={styles.empty}>
               <AlertCircle size={48} className={styles.emptyIcon} />
               <h3>No Transactions Yet</h3>
@@ -319,13 +324,13 @@ export const PlayerDashboard: React.FC = () => {
             </div>
           ) : (
             <DataTable
-              data={data.transactions}
+              data={transactions}
               columns={columns}
               pagination={
-                data.pagination
+                data?.pagination
                   ? {
                       currentPage: data.pagination.page,
-                      totalPages: data.pagination.pages || data.pagination.totalPages,
+                      totalPages: data.pagination.totalPages,
                       onPageChange: setPage,
                     }
                   : undefined
