@@ -50,7 +50,7 @@ export const Login: React.FC = () => {
           navigate('/agent');
         } else if (userRole === 'player') {
           // Players should use the landing page login
-          toast.info('Please use the Player Login from the landing page');
+          toast.error('This login section is for Admin and Agent only. Please use the Player Login button on the landing page.');
           navigate('/');
         } else {
           navigate('/');
