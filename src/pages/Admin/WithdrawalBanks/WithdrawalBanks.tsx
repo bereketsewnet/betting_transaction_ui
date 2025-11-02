@@ -30,6 +30,7 @@ export const WithdrawalBanks: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<WithdrawalBank | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [fields, setFields] = useState<Array<{ name: string; label: string; type: string; required: boolean }>>([
     { name: '', label: '', type: 'text', required: true }
   ]);
@@ -77,11 +78,24 @@ export const WithdrawalBanks: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
+    setDeleteError(null); // Clear any previous errors
     try {
       await deleteMutation.mutateAsync(id);
       setDeleteConfirmId(null);
-    } catch (error) {
+      setDeleteError(null);
+    } catch (error: any) {
       console.error('Delete failed:', error);
+      console.error('Error response:', error.response);
+      console.error('Error response data:', error.response?.data);
+      
+      // Extract error message from backend response
+      // Backend now returns 400 with clear error message
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Failed to delete withdrawal bank';
+      
+      setDeleteError(errorMessage);
     }
   };
 
@@ -294,20 +308,95 @@ export const WithdrawalBanks: React.FC = () => {
 
       <Modal
         isOpen={deleteConfirmId !== null}
-        onClose={() => setDeleteConfirmId(null)}
+        onClose={() => {
+          setDeleteConfirmId(null);
+          setDeleteError(null);
+        }}
         title="Confirm Delete"
       >
         <div className={styles.confirmDelete}>
           <p>Are you sure you want to delete this withdrawal bank?</p>
+          
+          {deleteConfirmId && (() => {
+            const bank = banksData?.banks?.find(b => b.id === deleteConfirmId);
+            return bank ? (
+              <div style={{ 
+                padding: '0.75rem', 
+                background: 'var(--color-background-secondary)', 
+                borderRadius: '4px',
+                marginTop: '0.5rem',
+                marginBottom: '0.5rem'
+              }}>
+                <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{bank.bankName}</p>
+                {bank.notes && (
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+                    {bank.notes}
+                  </p>
+                )}
+              </div>
+            ) : null;
+          })()}
+
+          {/* Warning message - always show */}
+          <div style={{
+            padding: '0.75rem',
+            background: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            marginTop: '0.5rem',
+            marginBottom: '0.5rem'
+          }}>
+            <p style={{ color: '#856404', margin: 0, fontSize: '0.875rem', fontWeight: 500 }}>
+              ⚠️ Warning: This bank account may have transactions associated with it.
+            </p>
+            <p style={{ 
+              color: '#856404', 
+              margin: '0.5rem 0 0 0', 
+              fontSize: '0.8125rem'
+            }}>
+              Deletion is not allowed if the bank is used in any transactions. If you want to hide this bank from new transactions, please deactivate it instead by editing and unchecking "Active".
+            </p>
+          </div>
+
+          {deleteError && (
+            <div style={{
+              padding: '0.75rem',
+              background: '#fee',
+              border: '1px solid #fcc',
+              borderRadius: '4px',
+              marginTop: '0.5rem',
+              marginBottom: '0.5rem'
+            }}>
+              <p style={{ color: '#c33', margin: 0, fontSize: '0.875rem', fontWeight: 500 }}>
+                {deleteError}
+              </p>
+              <p style={{ 
+                color: '#c33', 
+                margin: '0.5rem 0 0 0', 
+                fontSize: '0.8125rem',
+                fontStyle: 'italic'
+              }}>
+                💡 Suggestion: Instead of deleting, you can deactivate this bank by editing it and unchecking "Active".
+              </p>
+            </div>
+          )}
+
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>
+            Note: This action cannot be undone. If this bank is used in transactions, deletion will fail.
+          </p>
+
           <div className={styles.modalActions}>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+            <Button variant="outline" onClick={() => {
+              setDeleteConfirmId(null);
+              setDeleteError(null);
+            }}>
               Cancel
             </Button>
             <Button
               onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
               disabled={deleteMutation.isPending}
             >
-              Delete
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         </div>

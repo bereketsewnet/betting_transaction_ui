@@ -95,6 +95,13 @@ VITE_SOCKET_URL=http://localhost:3000
 VITE_APP_NAME=Betting Payment Manager
 VITE_APP_VERSION=1.0.0
 
+# Role IDs (from your database roles table)
+# Default values: ADMIN=10, AGENT=11, PLAYER=12
+# Update these if your role IDs are different
+VITE_ROLE_ID_ADMIN=10
+VITE_ROLE_ID_AGENT=11
+VITE_ROLE_ID_PLAYER=12
+
 # Upload Configuration
 VITE_MAX_FILE_SIZE=8388608
 VITE_ALLOWED_FILE_TYPES=image/png,image/jpeg,image/jpg

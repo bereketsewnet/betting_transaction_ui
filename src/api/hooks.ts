@@ -223,6 +223,17 @@ export const useUpdateTransactionStatus = () => {
   });
 };
 
+export const useDeleteTransaction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteTransaction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.transactions(1, 20) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transaction.all });
+    },
+  });
+};
+
 export const useAdminAgents = () => {
   return useQuery({
     queryKey: queryKeys.admin.agents,

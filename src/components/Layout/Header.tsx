@@ -139,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
         </div>
 
         <div className={styles.right}>
-          {isAuthenticated && user ? (
+          {isAuthenticated && user && user.role ? (
             <>
               <div 
                 className={styles.userMenu}
@@ -148,7 +148,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
               >
                 <button className={styles.userInfo}>
                   <User size={20} />
-                  <span className={styles.username}>{user.displayName}</span>
+                  <span className={styles.username}>{user.displayName || user.username || 'User'}</span>
                   <span className={styles.role}>({user.role})</span>
                   <ChevronDown size={16} />
                 </button>

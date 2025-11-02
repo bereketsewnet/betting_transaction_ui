@@ -39,6 +39,27 @@ export const USER_ROLES = {
   PLAYER: 'player',
 } as const;
 
+// Role IDs (from .env or defaults)
+export const ROLE_IDS = {
+  ADMIN: Number(import.meta.env.VITE_ROLE_ID_ADMIN) || 10,
+  AGENT: Number(import.meta.env.VITE_ROLE_ID_AGENT) || 11,
+  PLAYER: Number(import.meta.env.VITE_ROLE_ID_PLAYER) || 12,
+} as const;
+
+// Role ID reverse lookup (for filtering)
+export const ROLE_ID_TO_NAME: Record<number, string> = {
+  [ROLE_IDS.ADMIN]: USER_ROLES.ADMIN,
+  [ROLE_IDS.AGENT]: USER_ROLES.AGENT,
+  [ROLE_IDS.PLAYER]: USER_ROLES.PLAYER,
+};
+
+// Name to Role ID lookup
+export const ROLE_NAME_TO_ID: Record<string, number> = {
+  [USER_ROLES.ADMIN]: ROLE_IDS.ADMIN,
+  [USER_ROLES.AGENT]: ROLE_IDS.AGENT,
+  [USER_ROLES.PLAYER]: ROLE_IDS.PLAYER,
+};
+
 // Routes
 export const ROUTES = {
   HOME: '/',

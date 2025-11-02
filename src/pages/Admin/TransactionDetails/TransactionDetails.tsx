@@ -4,11 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   useAssignTransaction,
   useUpdateTransactionStatus,
+  useDeleteTransaction,
   useAdminUsers,
 } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
@@ -17,6 +18,7 @@ import { Select } from '@/components/ui/Select/Select';
 import { Input } from '@/components/ui/Input/Input';
 import { Modal, ModalFooter } from '@/components/ui/Modal/Modal';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
+import { ROLE_IDS } from '@/utils/constants';
 import type { TransactionStatus } from '@/types';
 import styles from './TransactionDetails.module.css';
 
@@ -38,6 +40,8 @@ export const TransactionDetails: React.FC = () => {
   const location = useLocation();
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Get transaction data from navigation state
   const transaction = location.state?.transaction;
@@ -45,10 +49,11 @@ export const TransactionDetails: React.FC = () => {
   const { data: agentsData } = useAdminUsers(
     1,
     undefined, // No limit - get all users
-    { role: 8, isActive: true } // Filter for active agents (role 8)
+    { role: ROLE_IDS.AGENT, isActive: true } // Filter for active agents
   );
   const assignTransaction = useAssignTransaction();
   const updateStatus = useUpdateTransactionStatus();
+  const deleteTransaction = useDeleteTransaction();
 
   const {
     register: registerStatus,
@@ -103,6 +108,31 @@ export const TransactionDetails: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!id) return;
+
+    setDeleteError(null);
+    try {
+      await deleteTransaction.mutateAsync(parseInt(id));
+      toast.success('Transaction deleted successfully');
+      setShowDeleteModal(false);
+      // Navigate back to transactions list
+      navigate('/admin/transactions');
+    } catch (error: any) {
+      console.error('Delete failed:', error);
+      console.error('Error response:', error.response);
+      console.error('Error response data:', error.response?.data);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Failed to delete transaction';
+      
+      setDeleteError(errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
   if (!transaction) {
     return (
       <div className={styles.container}>
@@ -141,6 +171,20 @@ export const TransactionDetails: React.FC = () => {
             {transaction.assignedAgent ? 'Reassign Agent' : 'Assign to Agent'}
           </Button>
           <Button onClick={() => setShowStatusModal(true)}>Update Status</Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setShowDeleteModal(true);
+              setDeleteError(null);
+            }}
+            style={{ 
+              color: '#dc2626',
+              borderColor: '#dc2626'
+            }}
+          >
+            <Trash2 size={16} style={{ marginRight: '0.5rem' }} />
+            Delete Transaction
+          </Button>
         </div>
       </div>
 
@@ -341,6 +385,111 @@ export const TransactionDetails: React.FC = () => {
             </Button>
           </ModalFooter>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal 
+        isOpen={showDeleteModal} 
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDeleteError(null);
+        }} 
+        title="Confirm Delete"
+      >
+        <div style={{ padding: '1rem 0' }}>
+          <p>Are you sure you want to delete this transaction?</p>
+          
+          {transaction && (
+            <div style={{ 
+              padding: '0.75rem', 
+              background: 'var(--color-background-secondary)', 
+              borderRadius: '4px',
+              marginTop: '0.75rem',
+              marginBottom: '0.75rem'
+            }}>
+              <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
+                Transaction ID: #{transaction.id}
+              </p>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '0.25rem' }}>
+                Type: <strong>{transaction.type}</strong>
+              </p>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '0.25rem' }}>
+                Amount: <strong>{transaction.currency} {parseFloat(transaction.amount).toFixed(2)}</strong>
+              </p>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+                Status: <strong>{transaction.status}</strong>
+              </p>
+            </div>
+          )}
+
+          {/* Warning message */}
+          <div style={{
+            padding: '0.75rem',
+            background: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            marginTop: '0.5rem',
+            marginBottom: '0.5rem'
+          }}>
+            <p style={{ color: '#856404', margin: 0, fontSize: '0.875rem', fontWeight: 500 }}>
+              ⚠️ Warning: This action cannot be undone.
+            </p>
+            <p style={{ 
+              color: '#856404', 
+              margin: '0.5rem 0 0 0', 
+              fontSize: '0.8125rem'
+            }}>
+              Deleting this transaction will permanently remove all associated data including comments, evidence, and audit logs.
+            </p>
+          </div>
+
+          {deleteError && (
+            <div style={{
+              padding: '0.75rem',
+              background: '#fee',
+              border: '1px solid #fcc',
+              borderRadius: '4px',
+              marginTop: '0.5rem',
+              marginBottom: '0.5rem'
+            }}>
+              <p style={{ color: '#c33', margin: 0, fontSize: '0.875rem', fontWeight: 500 }}>
+                Error: {deleteError}
+              </p>
+            </div>
+          )}
+
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginTop: '0.75rem' }}>
+            This action will permanently delete the transaction and all its associated data. Please confirm you want to proceed.
+          </p>
+        </div>
+
+        <ModalFooter>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setShowDeleteModal(false);
+              setDeleteError(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            disabled={deleteTransaction.isPending}
+            style={{
+              background: '#dc2626',
+              color: 'white'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#b91c1c';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#dc2626';
+            }}
+          >
+            {deleteTransaction.isPending ? 'Deleting...' : 'Delete Transaction'}
+          </Button>
+        </ModalFooter>
       </Modal>
     </div>
   );

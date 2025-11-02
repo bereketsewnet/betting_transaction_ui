@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input/Input';
 import { DataTable, Column } from '@/components/ui/DataTable/DataTable';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
+import { ROLE_IDS } from '@/utils/constants';
 import type { Transaction, TransactionStatus, TransactionType, AssignTransactionRequest } from '@/types';
 import styles from './Transactions.module.css';
 
@@ -41,7 +42,7 @@ export const Transactions: React.FC = () => {
   const { data: agentsData } = useAdminUsers(
     1,
     undefined, // No limit - get all users
-    { role: 8, isActive: true } // Filter for active agents (role 8)
+    { role: ROLE_IDS.AGENT, isActive: true } // Filter for active agents
   );
   const assignMutation = useAssignTransaction();
   const statusMutation = useUpdateTransactionStatus();

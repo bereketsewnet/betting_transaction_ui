@@ -34,15 +34,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Restore access token from localStorage if it exists
+        const storedToken = localStorage.getItem('accessToken');
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
+        
+        if (storedToken && storedUser) {
+          // Set the token in axios client
+          setAccessToken(storedToken);
+          
           // Try to get fresh profile to verify token is still valid
-          const profile = await authApi.getProfile();
-          setUser(profile);
-          localStorage.setItem('user', JSON.stringify(profile));
+          try {
+            const profile = await authApi.getProfile();
+            // Verify profile has required fields
+            if (profile && profile.id && profile.role) {
+              setUser(profile);
+              localStorage.setItem('user', JSON.stringify(profile));
+              localStorage.setItem('userRole', profile.role);
+            } else {
+              // Invalid profile data
+              console.error('Invalid profile data received:', profile);
+              setUser(null);
+              clearAuth();
+            }
+          } catch (profileError: any) {
+            // Token expired or invalid
+            console.log('Token validation failed:', profileError);
+            
+            // Clear auth state immediately - set user to null FIRST
+            setUser(null);
+            clearAuth();
+            
+            // If it's a 401 error, the axios interceptor might try to refresh
+            // But during initialization, we'll just clear and let ProtectedRoute handle redirect
+            // If refresh fails, the interceptor will redirect to /login
+          }
+        } else {
+          // No stored token or user, clear everything
+          clearAuth();
+          setUser(null);
         }
       } catch (error) {
-        // Token expired or invalid, clear stored data
+        // Any error during initialization, clear stored data
+        console.error('Auth initialization error:', error);
         clearAuth();
         setUser(null);
       } finally {

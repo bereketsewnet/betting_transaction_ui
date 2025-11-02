@@ -105,19 +105,20 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Token management functions (in-memory storage for security)
-let accessTokenInMemory: string | null = null;
+// Token management functions
+// Store access token in localStorage for persistence across page refreshes
+const ACCESS_TOKEN_KEY = 'accessToken';
 
 export const setAccessToken = (token: string) => {
-  accessTokenInMemory = token;
+  localStorage.setItem(ACCESS_TOKEN_KEY, token);
 };
 
 export const getAccessToken = (): string | null => {
-  return accessTokenInMemory;
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 };
 
 export const clearAuth = () => {
-  accessTokenInMemory = null;
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem('user');
   localStorage.removeItem('userRole');
 };

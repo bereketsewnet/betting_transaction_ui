@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Select } from '@/components/ui/Select/Select';
 import { DataTable, Column } from '@/components/ui/DataTable/DataTable';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
+import { ROLE_IDS } from '@/utils/constants';
 import type { Transaction, TransactionStatus, TransactionType } from '@/types';
 import styles from './AdminDashboard.module.css';
 
@@ -48,7 +49,7 @@ export const AdminDashboard: React.FC = () => {
   const { data: agentsData } = useAdminUsers(
     1,
     undefined, // No limit - get all users
-    { role: 8, isActive: true } // Filter for active agents (role 8)
+    { role: ROLE_IDS.AGENT, isActive: true } // Filter for active agents
   );
 
   // Calculate stats from ALL transactions
@@ -66,8 +67,8 @@ export const AdminDashboard: React.FC = () => {
     const completedTransactions = success + failed;
     const successRate = completedTransactions > 0 ? (success / completedTransactions) * 100 : 0;
     
-    // Count active agents (users with role 8 and isActive true)
-    const activeAgents = users.length; // Already filtered by role=8 and isActive=true
+    // Count active agents (already filtered by role and isActive)
+    const activeAgents = users.length;
 
     return {
       pending,

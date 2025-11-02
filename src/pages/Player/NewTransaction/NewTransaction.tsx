@@ -120,16 +120,26 @@ export const NewTransaction: React.FC = () => {
 
   const handleLanguageSetup = async () => {
     try {
-      // Create player profile
-      const telegramId = `web_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      // For anonymous users (when tempId exists), use tempId as telegramId
+      // This allows lookup by tempId later via /transactions/temp?tempId=...
+      // For registered users, they already have playerUuid, so this step is skipped
+      const telegramId = tempId || `web_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      
       const response = await createPlayer.mutateAsync({
         telegramId,
+        telegramUsername: tempId ? `temp_${tempId.split('_').slice(1).join('_')}` : undefined,
         languageCode,
       });
 
       const uuid = response.player.playerUuid;
       setPlayerUuid(uuid);
-      localStorage.setItem('playerUuid', uuid);
+      
+      // For anonymous users, don't store playerUuid - keep using tempId for lookups
+      // For registered users, playerUuid is already stored
+      if (!tempId) {
+        localStorage.setItem('playerUuid', uuid);
+      }
+      
       toast.success('Profile created successfully!');
       setStep(2);
     } catch (error: any) {

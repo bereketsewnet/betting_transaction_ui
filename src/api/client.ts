@@ -28,6 +28,7 @@ import type {
   CreateTemplateRequest,
   AgentStats,
   AgentStatsResponse,
+  AgentWithStats,
   UploadResponse,
   UploadConfig,
   WelcomeMessage,
@@ -59,8 +60,9 @@ export const authApi = {
   },
 
   getProfile: async (): Promise<User> => {
-    const response = await apiClient.get<User>('/auth/profile');
-    return response.data;
+    const response = await apiClient.get<{ user: User }>('/auth/profile');
+    // Backend returns { user: {...} }, extract the user object
+    return response.data.user;
   },
 
   changePassword: async (data: ChangePasswordRequest): Promise<void> => {
@@ -277,9 +279,13 @@ export const adminApi = {
     await apiClient.put(`/admin/transactions/${id}/status`, data);
   },
 
+  deleteTransaction: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/transactions/${id}`);
+  },
+
   // Agents
-  getAgents: async (): Promise<{ agents: AgentStats[] }> => {
-    const response = await apiClient.get<{ agents: AgentStats[] }>('/admin/agents');
+  getAgents: async (): Promise<{ agents: AgentWithStats[] }> => {
+    const response = await apiClient.get<{ agents: AgentWithStats[] }>('/admin/agents');
     return response.data;
   },
 

@@ -319,8 +319,25 @@ export interface AgentStats {
   completed: number;
   failed: number;
   averageRating: number;
-  totalAmount: string;
-  recentActivity: number;
+  totalAmount?: string;
+  recentActivity?: number;
+}
+
+// Agent with stats (from /admin/agents endpoint)
+export interface AgentWithStats {
+  id: number;
+  username: string;
+  displayName: string;
+  isActive: boolean;
+  stats: {
+    totalAssigned: number;
+    pending: number;
+    inProgress: number;
+    completed: number;
+    failed: number;
+    cancelled?: number;
+    averageRating: number;
+  };
 }
 
 export interface AgentStatsResponse {
