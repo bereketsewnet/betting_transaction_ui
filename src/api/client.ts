@@ -26,7 +26,7 @@ import type {
   CreateLanguageRequest,
   Template,
   CreateTemplateRequest,
-  AgentStats,
+  // AgentStats,
   AgentStatsResponse,
   AgentWithStats,
   UploadResponse,
@@ -42,6 +42,10 @@ import type {
   ConfigDepositBank,
   ConfigWithdrawalBank,
   UsersResponse,
+  BettingSite,
+  BettingSitesResponse,
+  CreateBettingSiteRequest,
+  UpdateBettingSiteRequest,
 } from '@/types';
 
 /* ==========================================
@@ -217,8 +221,8 @@ export const transactionApi = {
     tempId: string,
     page: number = 1,
     limit: number = 10
-  ): Promise<{ transactions: Transaction[]; pagination: Pagination; playerInfo: any }> => {
-    const response = await apiClient.get<{ transactions: Transaction[]; pagination: Pagination; playerInfo: any }>(
+  ): Promise<{ transactions: Transaction[]; pagination: { page: number; limit: number; total: number; pages: number }; playerInfo: any }> => {
+    const response = await apiClient.get<{ transactions: Transaction[]; pagination: { page: number; limit: number; total: number; pages: number }; playerInfo: any }>(
       '/transactions/temp',
       {
         params: { tempId, page, limit },

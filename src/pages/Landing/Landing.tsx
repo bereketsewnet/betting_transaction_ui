@@ -4,7 +4,6 @@ import {
   ArrowRight, 
   DollarSign, 
   Shield, 
-  Zap, 
   Users, 
   CheckCircle,
   Clock,

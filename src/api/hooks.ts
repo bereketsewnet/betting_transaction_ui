@@ -29,6 +29,8 @@ import type {
   UpdateUserRequest,
   ChangeUserPasswordRequest,
   UserFilters,
+  CreateBettingSiteRequest,
+  UpdateBettingSiteRequest,
 } from '@/types';
 
 /* ==========================================
@@ -194,7 +196,7 @@ export const useAdminTransactions = (
   filters?: TransactionFilters
 ) => {
   return useQuery({
-    queryKey: queryKeys.admin.transactions(page, limit, filters),
+    queryKey: queryKeys.admin.transactions(page, limit ?? 20, filters),
     queryFn: () => adminApi.getTransactions(page, limit, filters),
   });
 };

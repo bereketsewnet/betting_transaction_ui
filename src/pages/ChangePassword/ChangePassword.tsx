@@ -47,9 +47,9 @@ export const ChangePassword: React.FC = () => {
       reset();
       
       // Redirect based on role
-      if (user?.role === 'admin') {
+      if ((typeof user?.role === 'string' ? user.role : user?.role?.name) === 'admin') {
         navigate('/admin');
-      } else if (user?.role === 'agent') {
+      } else if ((typeof user?.role === 'string' ? user.role : user?.role?.name) === 'agent') {
         navigate('/agent');
       }
     } catch (error: unknown) {

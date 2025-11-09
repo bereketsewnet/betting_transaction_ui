@@ -64,7 +64,7 @@ export const PlayerHistory: React.FC = () => {
     {
       key: 'bettingSite',
       header: 'Betting Site',
-      render: (value, row) => (
+      render: (_value, row) => (
         <div className={styles.bettingSiteInfo}>
           {row.bettingSite ? (
             <>
@@ -136,7 +136,13 @@ export const PlayerHistory: React.FC = () => {
       <Card variant="bordered">
         <CardContent padding="none">
           <DataTable
-            data={data?.transactions || data?.data || []}
+            data={
+              'transactions' in (data || {}) 
+                ? (data as any).transactions 
+                : 'data' in (data || {}) 
+                ? (data as any).data 
+                : []
+            }
             columns={columns}
             isLoading={isLoading}
             emptyMessage="No transactions found"
@@ -144,7 +150,7 @@ export const PlayerHistory: React.FC = () => {
               data?.pagination
                 ? {
                     currentPage: data.pagination.page,
-                    totalPages: data.pagination.pages || data.pagination.totalPages,
+                    totalPages: 'pages' in data.pagination ? data.pagination.pages : (data.pagination as any).totalPages,
                     onPageChange: setPage,
                   }
                 : undefined

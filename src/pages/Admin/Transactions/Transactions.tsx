@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Eye, UserPlus, CheckCircle, XCircle, Clock, Filter, Download } from 'lucide-react';
+import { Eye, UserPlus, CheckCircle, Filter, Download } from 'lucide-react';
 import { useAdminTransactions, useAdminUsers, useAssignTransaction, useUpdateTransactionStatus } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
@@ -11,7 +11,7 @@ import { DataTable, Column } from '@/components/ui/DataTable/DataTable';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
 import { ROLE_IDS } from '@/utils/constants';
-import type { Transaction, TransactionStatus, TransactionType, AssignTransactionRequest } from '@/types';
+import type { Transaction, TransactionStatus, TransactionType } from '@/types';
 import styles from './Transactions.module.css';
 
 export const Transactions: React.FC = () => {
@@ -118,7 +118,7 @@ export const Transactions: React.FC = () => {
     {
       key: 'bettingSite',
       header: 'Betting Site',
-      render: (value, row) => (
+      render: (_value, row) => (
         <div className={styles.bettingSiteInfo}>
           {row.bettingSite ? (
             <>
@@ -280,8 +280,6 @@ export const Transactions: React.FC = () => {
                 ? {
                     currentPage: transactionsData.pagination.page,
                     totalPages: transactionsData.pagination.totalPages,
-                    totalItems: transactionsData.pagination.total,
-                    pageSize: transactionsData.pagination.limit,
                     onPageChange: setPage,
                   }
                 : undefined

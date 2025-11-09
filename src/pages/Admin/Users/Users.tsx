@@ -289,7 +289,9 @@ export const Users: React.FC = () => {
               <div className={styles.statCard}>
                 <div className={styles.statInfo}>
                   <span className={styles.statLabel}>Active Users</span>
-                  <span className={styles.statValue}>{statsData.statistics.activeUsers}</span>
+                  <span className={styles.statValue}>
+                    {usersData?.users?.filter(u => u.isActive).length || 0}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -300,7 +302,9 @@ export const Users: React.FC = () => {
               <div className={styles.statCard}>
                 <div className={styles.statInfo}>
                   <span className={styles.statLabel}>Inactive Users</span>
-                  <span className={styles.statValue}>{statsData.statistics.inactiveUsers}</span>
+                  <span className={styles.statValue}>
+                    {usersData?.users?.filter(u => !u.isActive).length || 0}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -311,7 +315,14 @@ export const Users: React.FC = () => {
               <div className={styles.statCard}>
                 <div className={styles.statInfo}>
                   <span className={styles.statLabel}>Recent Users</span>
-                  <span className={styles.statValue}>{statsData.statistics.recentUsers}</span>
+                  <span className={styles.statValue}>
+                    {usersData?.users?.filter(u => {
+                      const createdDate = new Date(u.createdAt);
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      return createdDate >= weekAgo;
+                    }).length || 0}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -359,8 +370,6 @@ export const Users: React.FC = () => {
               pagination={{
                 currentPage: usersData?.pagination?.page || 1,
                 totalPages: usersData?.pagination?.pages || 1,
-                totalItems: usersData?.pagination?.total || 0,
-                pageSize: usersData?.pagination?.limit || 20,
                 onPageChange: setPage,
               }}
             />

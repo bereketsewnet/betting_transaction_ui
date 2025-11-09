@@ -37,13 +37,15 @@ export const Login: React.FC = () => {
       await login(data.username, data.password);
       toast.success('Login successful!');
       
+      // Get user role from localStorage (just set by login function)
+      const userRole = localStorage.getItem('userRole');
+      
       // Redirect to the page user was trying to access, or to their role's dashboard
       const from = (location.state as any)?.from?.pathname;
-      if (from) {
+      if (from && from !== '/login') {
         navigate(from);
       } else {
-        // Get user role and redirect appropriately
-        const userRole = localStorage.getItem('userRole');
+        // Redirect based on user role
         if (userRole === 'admin') {
           navigate('/admin');
         } else if (userRole === 'agent') {
@@ -53,7 +55,25 @@ export const Login: React.FC = () => {
           toast.error('This login section is for Admin and Agent only. Please use the Player Login button on the landing page.');
           navigate('/');
         } else {
-          navigate('/');
+          // Fallback: try to get role from stored user object
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              const userObj = JSON.parse(storedUser);
+              const roleFromUser = typeof userObj.role === 'string' ? userObj.role : userObj.role?.name;
+              if (roleFromUser === 'admin') {
+                navigate('/admin');
+              } else if (roleFromUser === 'agent') {
+                navigate('/agent');
+              } else {
+                navigate('/');
+              }
+            } catch {
+              navigate('/');
+            }
+          } else {
+            navigate('/');
+          }
         }
       }
     } catch (error: any) {

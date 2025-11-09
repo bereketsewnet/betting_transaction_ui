@@ -42,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
           </Link>
 
           {/* Admin Navigation */}
-          {isAuthenticated && user?.role === 'admin' && (
+          {isAuthenticated && (typeof user?.role === 'string' ? user.role : user?.role?.name) === 'admin' && (
             <nav className={styles.nav}>
               <Link 
                 to="/admin" 
@@ -102,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
           )}
 
           {/* Agent Navigation */}
-          {isAuthenticated && user?.role === 'agent' && (
+          {isAuthenticated && (typeof user?.role === 'string' ? user.role : user?.role?.name) === 'agent' && (
             <nav className={styles.nav}>
               <Link 
                 to="/agent" 
@@ -149,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                 <button className={styles.userInfo}>
                   <User size={20} />
                   <span className={styles.username}>{user.displayName || user.username || 'User'}</span>
-                  <span className={styles.role}>({user.role})</span>
+                  <span className={styles.role}>({typeof user.role === 'string' ? user.role : user.role?.name || 'unknown'})</span>
                   <ChevronDown size={16} />
                 </button>
                 {showUserMenu && (

@@ -16,8 +16,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { DataTable } from '@/components/ui/DataTable/DataTable';
 import { Modal } from '@/components/ui/Modal/Modal';
-import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
-import type { BettingSite, CreateBettingSiteRequest, UpdateBettingSiteRequest } from '@/types';
+import type { BettingSite } from '@/types';
 import styles from './BettingSites.module.css';
 
 const bettingSiteSchema = z.object({
@@ -154,7 +153,9 @@ export const BettingSites: React.FC = () => {
       key: 'isActive',
       header: 'Status',
       render: (value: boolean) => (
-        <StatusBadge status={value ? 'active' : 'inactive'} />
+        <span className={value ? styles.statusActive : styles.statusInactive}>
+          {value ? 'Active' : 'Inactive'}
+        </span>
       ),
     },
     {
@@ -165,7 +166,7 @@ export const BettingSites: React.FC = () => {
     {
       key: 'actions',
       header: 'Actions',
-      render: (value: any, row: BettingSite) => (
+      render: (_value: any, row: BettingSite) => (
         <div className={styles.actions}>
           <Button
             size="sm"
@@ -187,7 +188,7 @@ export const BettingSites: React.FC = () => {
           </Button>
           <Button
             size="sm"
-            variant="destructive"
+            variant="danger"
             onClick={() => setDeleteConfirm(row)}
             disabled={deleteBettingSite.isPending}
           >
@@ -248,7 +249,7 @@ export const BettingSites: React.FC = () => {
           <DataTable
             data={bettingSitesData?.bettingSites || []}
             columns={columns}
-            loading={isLoading}
+            isLoading={isLoading}
             emptyMessage="No betting sites found"
           />
         </CardContent>
@@ -347,7 +348,7 @@ export const BettingSites: React.FC = () => {
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant="danger"
               onClick={handleDelete}
               disabled={deleteBettingSite.isPending}
             >

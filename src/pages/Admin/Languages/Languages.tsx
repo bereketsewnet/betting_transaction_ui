@@ -143,13 +143,6 @@ export const Languages: React.FC = () => {
             <DataTable
               data={languagesData?.languages || []}
               columns={columns}
-              pagination={{
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: languagesData?.languages?.length || 0,
-                pageSize: languagesData?.languages?.length || 0,
-                onPageChange: () => {},
-              }}
             />
           )}
         </CardContent>

@@ -139,13 +139,6 @@ export const Templates: React.FC = () => {
             <DataTable
               data={templatesData?.templates || []}
               columns={columns}
-              pagination={{
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: templatesData?.templates?.length || 0,
-                pageSize: templatesData?.templates?.length || 0,
-                onPageChange: () => {},
-              }}
             />
           )}
         </CardContent>

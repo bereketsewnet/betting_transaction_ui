@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
-import { Select } from '@/components/ui/Select/Select';
+// import { Select } from '@/components/ui/Select/Select';
 import styles from './LanguageSwitcher.module.css';
 
 export const LanguageSwitcher: React.FC = () => {

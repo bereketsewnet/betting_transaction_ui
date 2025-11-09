@@ -164,13 +164,6 @@ export const DepositBanks: React.FC = () => {
             <DataTable
               data={banksData?.banks || []}
               columns={columns}
-              pagination={{
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: banksData?.banks?.length || 0,
-                pageSize: banksData?.banks?.length || 0,
-                onPageChange: () => {},
-              }}
             />
           )}
         </CardContent>

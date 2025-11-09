@@ -49,7 +49,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (profile && profile.id && profile.role) {
               setUser(profile);
               localStorage.setItem('user', JSON.stringify(profile));
-              localStorage.setItem('userRole', profile.role);
+              // Store role as string (handle both string and object role types)
+              const roleName = typeof profile.role === 'string' ? profile.role : profile.role?.name || '';
+              localStorage.setItem('userRole', roleName);
             } else {
               // Invalid profile data
               console.error('Invalid profile data received:', profile);
@@ -96,7 +98,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Store user info (minimal data, no sensitive tokens)
       setUser(response.user);
       localStorage.setItem('user', JSON.stringify(response.user));
-      localStorage.setItem('userRole', response.user.role);
+      // Store role as string (handle both string and object role types)
+      const roleName = typeof response.user.role === 'string' ? response.user.role : response.user.role?.name || '';
+      localStorage.setItem('userRole', roleName);
     } catch (error) {
       throw error;
     }
@@ -133,12 +137,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 // Helper hook to check user role
 export const useRequireRole = (requiredRole: UserRole): boolean => {
   const { user } = useAuth();
-  return user?.role === requiredRole;
+  return user?.role?.name === requiredRole;
 };
 
 // Helper hook to check if user has any of the specified roles
 export const useHasRole = (roles: UserRole[]): boolean => {
   const { user } = useAuth();
-  return user ? roles.includes(user.role) : false;
+  return user ? roles.includes(user.role?.name as UserRole) : false;
 };
 

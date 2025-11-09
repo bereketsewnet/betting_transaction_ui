@@ -1,6 +1,6 @@
 import React, { useState, useRef, DragEvent, ChangeEvent } from 'react';
 import { Upload, X, FileIcon } from 'lucide-react';
-import { Button } from '../Button/Button';
+// import { Button } from '../Button/Button';
 import styles from './FileUpload.module.css';
 
 export interface FileUploadProps {

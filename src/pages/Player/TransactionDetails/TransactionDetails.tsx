@@ -56,7 +56,7 @@ export const TransactionDetails: React.FC = () => {
           variant="ghost"
           onClick={() => navigate('/player/history')}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} style={{ paddingTop: '6px' }} />
           Back to History
         </Button>
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
-import { Button } from '../Button/Button';
+// import { Button } from '../Button/Button';
 import styles from './Modal.module.css';
 
 export interface ModalProps {

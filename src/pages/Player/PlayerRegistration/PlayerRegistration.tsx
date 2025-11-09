@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -78,14 +78,17 @@ export const PlayerRegistration: React.FC = () => {
     setIsSubmitting(true);
     try {
       // Use email as both username and email
+      // The backend accepts extended fields even though TypeScript type doesn't include them
       const response = await createPlayer.mutateAsync({
+        telegramId: data.email, // Use email as telegramId for now
+        telegramUsername: data.email,
+        languageCode: data.languageCode,
         username: data.email,
         email: data.email,
         password: data.password,
         displayName: data.displayName,
         phone: data.phone,
-        languageCode: data.languageCode,
-      });
+      } as any);
 
       const playerUuid = response.player.playerUuid;
       localStorage.setItem('playerUuid', playerUuid);

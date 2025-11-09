@@ -54,7 +54,8 @@ export const useSocket = () => {
       console.log('New transaction:', notification);
       
       // Show toast notification
-      if (user?.role === 'admin') {
+      const userRole = typeof user?.role === 'string' ? user.role : user?.role?.name;
+      if (userRole === 'admin') {
         toast(`New ${notification.data.type} transaction`, {
           icon: '🔔',
         });
@@ -68,7 +69,8 @@ export const useSocket = () => {
     socketInstance.on('transaction:assigned', (notification: SocketNotification) => {
       console.log('Transaction assigned:', notification);
 
-      if (user?.role === 'agent') {
+      const userRole = typeof user?.role === 'string' ? user.role : user?.role?.name;
+      if (userRole === 'agent') {
         toast('New task assigned to you', {
           icon: '📋',
         });
@@ -93,7 +95,8 @@ export const useSocket = () => {
     });
 
     // Admin-specific notifications
-    if (user?.role === 'admin') {
+    const userRole = typeof user?.role === 'string' ? user.role : user?.role?.name;
+    if (userRole === 'admin') {
       socketInstance.on('admin_notification', (data) => {
         console.log('Admin notification:', data);
         toast(data.message || 'Admin notification', {
@@ -103,7 +106,7 @@ export const useSocket = () => {
     }
 
     // Agent-specific notifications
-    if (user?.role === 'agent') {
+    if (userRole === 'agent') {
       socketInstance.on('agent_notification', (data) => {
         console.log('Agent notification:', data);
         toast(data.message || 'Agent notification', {

@@ -55,7 +55,7 @@ export const TempIdLookup: React.FC = () => {
     {
       key: 'id',
       header: 'Actions',
-      render: (value, row) => (
+      render: (_value, row) => (
         <Button
           size="sm"
           variant="outline"

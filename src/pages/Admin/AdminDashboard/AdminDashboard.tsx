@@ -58,10 +58,10 @@ export const AdminDashboard: React.FC = () => {
     const users = agentsData?.users || []; // Use users instead of agents
     
     // Count transactions by status
-    const pending = transactions.filter((t) => t.status === 'Pending' || t.status === 'PENDING').length;
-    const inProgress = transactions.filter((t) => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length;
-    const success = transactions.filter((t) => t.status === 'Success' || t.status === 'SUCCESS').length;
-    const failed = transactions.filter((t) => t.status === 'Failed' || t.status === 'FAILED').length;
+    const pending = transactions.filter((t) => t.status.toUpperCase() === 'PENDING').length;
+    const inProgress = transactions.filter((t) => t.status.toUpperCase() === 'IN_PROGRESS').length;
+    const success = transactions.filter((t) => t.status.toUpperCase() === 'SUCCESS').length;
+    const failed = transactions.filter((t) => t.status.toUpperCase() === 'FAILED').length;
     
     // Calculate success rate from completed transactions (success + failed)
     const completedTransactions = success + failed;
@@ -126,7 +126,7 @@ export const AdminDashboard: React.FC = () => {
     {
       key: 'bettingSite',
       header: 'Betting Site',
-      render: (value, row) => {
+      render: (_value, row) => {
         if (row.bettingSite) {
           return (
             <div className={styles.bettingSiteInfo}>
@@ -146,7 +146,7 @@ export const AdminDashboard: React.FC = () => {
     {
       key: 'actions',
       header: 'Actions',
-      render: (value, row) => (
+      render: (_value, row) => (
         <Button
           size="sm"
           variant="outline"

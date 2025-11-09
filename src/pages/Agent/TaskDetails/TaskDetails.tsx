@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { Select } from '@/components/ui/Select/Select';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
-import type { Transaction, TransactionStatus } from '@/types';
+import type { TransactionStatus } from '@/types';
 import styles from './TaskDetails.module.css';
 
 const processSchema = z.object({
@@ -146,7 +146,7 @@ export const TaskDetails: React.FC = () => {
       </div>
     );
   }
-  const canProcess = ['PENDING', 'IN_PROGRESS'].includes(transaction.status);
+  // const canProcess = ['PENDING', 'IN_PROGRESS'].includes(transaction.status);
 
   return (
     <div className={styles.container}>

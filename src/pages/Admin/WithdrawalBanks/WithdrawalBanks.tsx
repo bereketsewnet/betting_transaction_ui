@@ -31,7 +31,7 @@ export const WithdrawalBanks: React.FC = () => {
   const [editingBank, setEditingBank] = useState<WithdrawalBank | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [fields, setFields] = useState<Array<{ name: string; label: string; type: string; required: boolean }>>([
+  const [fields, setFields] = useState<Array<{ name: string; label: string; type: 'text' | 'number' | 'email'; required: boolean }>>([
     { name: '', label: '', type: 'text', required: true }
   ]);
 
@@ -100,7 +100,10 @@ export const WithdrawalBanks: React.FC = () => {
   };
 
   const addField = () => {
-    const newFields = [...fields, { name: '', label: '', type: 'text', required: true }];
+    const newFields: Array<{ name: string; label: string; type: 'text' | 'number' | 'email'; required: boolean }> = [
+      ...fields, 
+      { name: '', label: '', type: 'text' as const, required: true }
+    ];
     setFields(newFields);
     setValue('requiredFields', newFields);
   };
@@ -113,8 +116,15 @@ export const WithdrawalBanks: React.FC = () => {
 
   const updateField = (index: number, key: keyof typeof fields[0], value: string | boolean) => {
     const newFields = [...fields];
-    // @ts-expect-error - dynamic key access
-    newFields[index][key] = value;
+    if (key === 'type' && typeof value === 'string') {
+      // Ensure type is one of the valid values
+      if (value === 'text' || value === 'number' || value === 'email') {
+        newFields[index][key] = value;
+      }
+    } else if (key !== 'type') {
+      // @ts-expect-error - dynamic key access
+      newFields[index][key] = value;
+    }
     setFields(newFields);
     setValue('requiredFields', newFields);
   };
@@ -205,13 +215,6 @@ export const WithdrawalBanks: React.FC = () => {
             <DataTable
               data={banksData?.banks || []}
               columns={columns}
-              pagination={{
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: banksData?.banks?.length || 0,
-                pageSize: banksData?.banks?.length || 0,
-                onPageChange: () => {},
-              }}
             />
           )}
         </CardContent>

@@ -41,7 +41,7 @@ export const AgentDashboard: React.FC = () => {
   console.log('- User role:', user?.role);
   console.log('- Is authenticated:', isAuthenticated);
 
-  const { data: statsResponse, error: statsError, isLoading: statsLoading } = useAgentStats(user?.id || 0);
+  const { data: statsResponse, error: _statsError, isLoading: _statsLoading } = useAgentStats(user?.id || 0);
   const { data: tasksData, isLoading: tasksLoading, error: tasksError, refetch: refetchTasks } = useAgentTasks(
     user?.id || 0,
     page,
@@ -65,10 +65,10 @@ export const AgentDashboard: React.FC = () => {
   console.log('- Stats response:', statsResponse);
   console.log('- Tasks data:', tasksData);
   console.log('- Tasks error:', tasksError);
-  console.log('- Sample task:', tasksData?.tasks?.[0]);
-  console.log('- Sample task betting site:', tasksData?.tasks?.[0]?.bettingSite);
-  console.log('- Sample task betting site ID:', tasksData?.tasks?.[0]?.bettingSiteId);
-  console.log('- Sample task player site ID:', tasksData?.tasks?.[0]?.playerSiteId);
+  console.log('- Sample task:', tasksData?.data?.[0]);
+  console.log('- Sample task betting site:', tasksData?.data?.[0]?.bettingSite);
+  console.log('- Sample task betting site ID:', tasksData?.data?.[0]?.bettingSiteId);
+  console.log('- Sample task player site ID:', tasksData?.data?.[0]?.playerSiteId);
 
   const {
     register,
@@ -113,15 +113,15 @@ export const AgentDashboard: React.FC = () => {
       render: (value) => <StatusBadge status={value} />,
     },
     {
-      key: 'playerProfile',
+      key: 'player',
       header: 'Player',
-      render: (value, row) => (
+      render: (_value, row) => (
         <div>
           <div className={styles.playerName}>
-            {row.playerProfile?.telegramUsername || 'Unknown'}
+            {row.player?.telegramUsername || 'Unknown'}
           </div>
           <div className={styles.playerId}>
-            {row.playerProfile?.playerUuid?.slice(0, 8)}...
+            {row.player?.playerUuid?.slice(0, 8)}...
           </div>
         </div>
       ),
@@ -129,7 +129,7 @@ export const AgentDashboard: React.FC = () => {
     {
       key: 'bettingSite',
       header: 'Betting Site',
-      render: (value, row) => (
+      render: (_value, row) => (
         <div className={styles.bettingSiteInfo}>
           {row.bettingSite ? (
             <>
@@ -161,7 +161,7 @@ export const AgentDashboard: React.FC = () => {
     {
       key: 'evidence',
       header: 'Evidence',
-      render: (value, row) => (
+      render: (_value, row) => (
         <div className={styles.evidence}>
           {row.screenshotUrl ? (
             <span className={styles.hasEvidence}>📎 Screenshot</span>
@@ -179,7 +179,7 @@ export const AgentDashboard: React.FC = () => {
     {
       key: 'id',
       header: 'Actions',
-      render: (value, row) => (
+      render: (_value, row) => (
         <div className={styles.actions}>
           <Button
             size="sm"
@@ -313,7 +313,7 @@ export const AgentDashboard: React.FC = () => {
             fontFamily: 'monospace',
             color: '#495057'
           }}>
-            INFO: Agent ID: {user?.id} | Role: {user?.role} | Tasks Count: {tasksData?.tasks?.length || 0}
+            INFO: Agent ID: {user?.id} | Role: {typeof user?.role === 'string' ? user.role : user?.role?.name || 'unknown'} | Tasks Count: {tasksData?.data?.length || 0}
           </div>
         </div>
       </div>
@@ -359,7 +359,7 @@ export const AgentDashboard: React.FC = () => {
         </CardHeader>
         <CardContent padding="none">
           <DataTable
-            data={tasksData?.tasks || []}
+            data={tasksData?.data || []}
             columns={columns}
             isLoading={tasksLoading}
             emptyMessage="No tasks assigned yet"
@@ -367,7 +367,7 @@ export const AgentDashboard: React.FC = () => {
               tasksData?.pagination
                 ? {
                     currentPage: tasksData.pagination.page,
-                    totalPages: tasksData.pagination.pages,
+                    totalPages: tasksData.pagination.totalPages,
                     onPageChange: setPage,
                   }
                 : undefined
