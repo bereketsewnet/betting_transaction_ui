@@ -151,7 +151,7 @@ export const PlayerLogin: React.FC<PlayerLoginProps> = ({ onClose }) => {
           />
 
           <Button type="submit" fullWidth isLoading={isLoading} className={styles.submitButton}>
-            <LogIn size={20} />
+            <LogIn size={20} style={{ paddingTop: '6px' }}/>
             Login
           </Button>
         </form>

@@ -152,6 +152,11 @@
   background: white;
 }
 
+.secondaryButton {
+  border: 1px solid #00d4ff;
+  color: #00d4ff;
+}
+
 .trustBadges {
   display: flex;
   gap: 2rem;
@@ -360,6 +365,10 @@
   max-width: 400px;
   aspect-ratio: 1;
   background: linear-gradient(135deg, #00d4ff 0%, #000000 100%);
+  background-image: url('../../assets/bettingimage.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 30px;
   display: flex;
   align-items: center;

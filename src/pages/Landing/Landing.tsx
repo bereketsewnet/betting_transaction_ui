@@ -54,13 +54,8 @@ export const Landing: React.FC = () => {
     },
     {
       icon: <Shield size={40} />,
-      title: 'Bank-Grade Security',
-      description: 'Your transactions are protected with enterprise-level encryption and security protocols',
-    },
-    {
-      icon: <Zap size={40} />,
-      title: 'Real-Time Updates',
-      description: 'Get instant notifications and track your transaction status in real-time',
+      title: 'Secure & Encrypted',
+      description: 'Your transactions are protected with our encryption and security database',
     },
     {
       icon: <Users size={40} />,
@@ -70,10 +65,10 @@ export const Landing: React.FC = () => {
   ];
 
   const stats = [
-    { value: '10K+', label: 'Active Users' },
+    { value: '2K+', label: 'Active Users' },
     { value: '99.9%', label: 'Uptime' },
-    { value: '<2min', label: 'Avg. Processing' },
-    { value: '50K+', label: 'Transactions/Day' },
+    { value: '<15min', label: 'Avg. Processing' },
+    { value: '5K+', label: 'Transactions/Day' },
   ];
 
   const benefits = [
@@ -81,7 +76,6 @@ export const Landing: React.FC = () => {
     'Multiple payment methods supported',
     'Transparent fee structure',
     'Detailed transaction history',
-    'Automated notifications',
     'Multi-language support',
   ];
 
@@ -109,7 +103,7 @@ export const Landing: React.FC = () => {
                 onClick={() => navigate('/player/register')}
               >
                 Player Registration
-                <ArrowRight size={20} />
+                <ArrowRight size={20} style={{ paddingTop: '6px' }} />
               </Button>
               <Button
                 variant="outline"
@@ -117,7 +111,7 @@ export const Landing: React.FC = () => {
                 className={styles.secondaryButton}
                 onClick={() => setShowPlayerLogin(true)}
               >
-                <LogIn size={20} />
+                <LogIn size={20} style={{ paddingTop: '6px' }} />
                 Player Login
               </Button>
               <Button
@@ -126,7 +120,7 @@ export const Landing: React.FC = () => {
                 className={styles.secondaryButton}
                 onClick={() => navigate('/player/new-transaction')}
               >
-                <Search size={20} />
+                <Search size={20} style={{ paddingTop: '6px' }} />
                 Transactions
               </Button>
             </div>
@@ -205,12 +199,11 @@ export const Landing: React.FC = () => {
               className={styles.benefitsButton}
             >
               Get Started Now
-              <ArrowRight size={20} />
+              <ArrowRight size={20} style={{ paddingTop: '6px' }}/>
             </Button>
           </div>
           <div className={`${styles.benefitsImage} ${styles.fadeInUp}`}>
             <div className={styles.imagePlaceholder}>
-              <DollarSign size={120} />
             </div>
           </div>
         </div>
@@ -296,15 +289,15 @@ export const Landing: React.FC = () => {
               className={styles.ctaPrimaryButton}
             >
               Create Account
-              <ArrowRight size={20} />
+              <ArrowRight size={20} style={{ paddingTop: '6px' }} />
             </Button>
             <Button
-              variant="outline"
               size="lg"
               onClick={() => navigate('/login')}
-              className={styles.ctaSecondaryButton}
+              className={styles.ctaPrimaryButton}
             >
               Staff Login
+              <ArrowRight size={20} style={{ paddingTop: '6px' }} />
             </Button>
           </div>
         </div>
