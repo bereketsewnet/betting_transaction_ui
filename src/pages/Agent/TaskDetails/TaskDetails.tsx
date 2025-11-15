@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { Select } from '@/components/ui/Select/Select';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
+import { getUploadUrl } from '@/utils/constants';
 import type { TransactionStatus } from '@/types';
 import styles from './TaskDetails.module.css';
 
@@ -261,7 +262,7 @@ export const TaskDetails: React.FC = () => {
               <div className={styles.screenshot}>
                 <label>Payment Screenshot</label>
                 <img
-                  src={transaction.screenshotUrl}
+                  src={getUploadUrl(transaction.screenshotUrl) || ''}
                   alt="Payment screenshot"
                   className={styles.image}
                 />

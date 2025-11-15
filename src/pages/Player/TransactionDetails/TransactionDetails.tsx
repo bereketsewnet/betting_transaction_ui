@@ -6,6 +6,7 @@ import { useTransaction } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
+import { getUploadUrl } from '@/utils/constants';
 import styles from './TransactionDetails.module.css';
 
 export const TransactionDetails: React.FC = () => {
@@ -145,12 +146,12 @@ export const TransactionDetails: React.FC = () => {
               <label>Payment Screenshot</label>
               <div className={styles.imageContainer}>
                 <img
-                  src={transaction.screenshotUrl}
+                  src={getUploadUrl(transaction.screenshotUrl) || ''}
                   alt="Payment screenshot"
                   className={styles.image}
                 />
                 <a
-                  href={transaction.screenshotUrl}
+                  href={getUploadUrl(transaction.screenshotUrl) || ''}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
@@ -168,12 +169,12 @@ export const TransactionDetails: React.FC = () => {
               <label>Agent Evidence</label>
               <div className={styles.imageContainer}>
                 <img
-                  src={transaction.evidenceUrl}
+                  src={getUploadUrl(transaction.evidenceUrl) || ''}
                   alt="Agent evidence"
                   className={styles.image}
                 />
                 <a
-                  href={transaction.evidenceUrl}
+                  href={getUploadUrl(transaction.evidenceUrl) || ''}
                   download
                   target="_blank"
                   rel="noopener noreferrer"

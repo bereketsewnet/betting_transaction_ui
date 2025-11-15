@@ -18,7 +18,7 @@ import { Select } from '@/components/ui/Select/Select';
 import { Input } from '@/components/ui/Input/Input';
 import { Modal, ModalFooter } from '@/components/ui/Modal/Modal';
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
-import { ROLE_IDS } from '@/utils/constants';
+import { ROLE_IDS, getUploadUrl } from '@/utils/constants';
 import type { TransactionStatus } from '@/types';
 import styles from './TransactionDetails.module.css';
 
@@ -298,14 +298,14 @@ export const TransactionDetails: React.FC = () => {
           {transaction.screenshotUrl && (
             <div className={styles.screenshot}>
               <label>Payment Screenshot</label>
-              <img src={transaction.screenshotUrl} alt="Payment screenshot" className={styles.image} />
+              <img src={getUploadUrl(transaction.screenshotUrl) || ''} alt="Payment screenshot" className={styles.image} />
             </div>
           )}
 
           {transaction.evidenceUrl && (
             <div className={styles.screenshot}>
               <label>Agent Evidence</label>
-              <img src={transaction.evidenceUrl} alt="Agent evidence" className={styles.image} />
+              <img src={getUploadUrl(transaction.evidenceUrl) || ''} alt="Agent evidence" className={styles.image} />
             </div>
           )}
 

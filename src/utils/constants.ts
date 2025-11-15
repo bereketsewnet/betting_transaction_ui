@@ -83,3 +83,32 @@ export const STORAGE_KEYS = {
   LANGUAGE: 'i18nextLng',
 } as const;
 
+/**
+ * Get the API base URL without the /api/v1 suffix
+ * Used for constructing upload URLs
+ */
+export const getApiBaseUrl = (): string => {
+  const apiBaseUrl = API_BASE_URL || 'http://localhost:3000/api/v1';
+  // Remove /api/v1 suffix if present
+  return apiBaseUrl.replace(/\/api\/v1\/?$/, '');
+};
+
+/**
+ * Convert a relative upload URL to an absolute URL
+ * Handles both relative paths (/uploads/...) and already absolute URLs
+ */
+export const getUploadUrl = (url: string | undefined | null): string | undefined => {
+  if (!url) return undefined;
+  
+  // If already an absolute URL, return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const baseUrl = getApiBaseUrl();
+  // Ensure the path starts with /
+  const path = url.startsWith('/') ? url : `/${url}`;
+  return `${baseUrl}${path}`;
+};
+
