@@ -93,8 +93,11 @@ export const PlayerHistory: React.FC = () => {
           variant="outline"
           onClick={(e) => {
             e.stopPropagation();
+            // Pass playerUuid if available, otherwise pass tempId
+            // The API needs playerUuid to verify ownership
+            const uuidToPass = playerUuid || (tempId ? undefined : idToUse);
             navigate(`/player/transaction/${row.id}`, {
-              state: { playerUuid: idToUse, tempId: tempId || undefined },
+              state: { playerUuid: uuidToPass, tempId: tempId || undefined },
             });
           }}
         >

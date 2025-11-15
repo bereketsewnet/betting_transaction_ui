@@ -14,6 +14,8 @@ export const TransactionDetails: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
+  // Get playerUuid from navigation state or localStorage
+  // For temporary players, it should be stored when they create a transaction
   const playerUuid = (location.state as any)?.playerUuid || localStorage.getItem('playerUuid');
   
   const { data, isLoading } = useTransaction(parseInt(id || '0'), playerUuid || undefined);

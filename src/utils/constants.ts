@@ -40,10 +40,12 @@ export const USER_ROLES = {
 } as const;
 
 // Role IDs (from .env or defaults)
+// Note: These should match the actual role IDs in the database
+// Database roles: admin=1, agent=2, player=3
 export const ROLE_IDS = {
-  ADMIN: Number(import.meta.env.VITE_ROLE_ID_ADMIN) || 10,
-  AGENT: Number(import.meta.env.VITE_ROLE_ID_AGENT) || 11,
-  PLAYER: Number(import.meta.env.VITE_ROLE_ID_PLAYER) || 12,
+  ADMIN: Number(import.meta.env.VITE_ROLE_ID_ADMIN) || 1,
+  AGENT: Number(import.meta.env.VITE_ROLE_ID_AGENT) || 2,
+  PLAYER: Number(import.meta.env.VITE_ROLE_ID_PLAYER) || 3,
 } as const;
 
 // Role ID reverse lookup (for filtering)

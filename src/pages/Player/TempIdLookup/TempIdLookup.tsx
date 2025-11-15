@@ -61,8 +61,10 @@ export const TempIdLookup: React.FC = () => {
           variant="outline"
           onClick={(e) => {
             e.stopPropagation();
+            // Get playerUuid from localStorage if available (stored when creating transaction)
+            const playerUuid = localStorage.getItem('playerUuid');
             navigate(`/player/transaction/${row.id}`, {
-              state: { tempId, isTempLookup: true }
+              state: { tempId, isTempLookup: true, playerUuid }
             });
           }}
         >
@@ -167,11 +169,13 @@ export const TempIdLookup: React.FC = () => {
                   }
                 : undefined
             }
-            onRowClick={(row) =>
+            onRowClick={(row) => {
+              // Get playerUuid from localStorage if available (stored when creating transaction)
+              const playerUuid = localStorage.getItem('playerUuid');
               navigate(`/player/transaction/${row.id}`, {
-                state: { tempId, isTempLookup: true }
-              })
-            }
+                state: { tempId, isTempLookup: true, playerUuid }
+              });
+            }}
           />
         </CardContent>
       </Card>

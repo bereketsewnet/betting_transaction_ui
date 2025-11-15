@@ -134,11 +134,9 @@ export const NewTransaction: React.FC = () => {
       const uuid = response.player.playerUuid;
       setPlayerUuid(uuid);
       
-      // For anonymous users, don't store playerUuid - keep using tempId for lookups
-      // For registered users, playerUuid is already stored
-      if (!tempId) {
-        localStorage.setItem('playerUuid', uuid);
-      }
+      // Store playerUuid for both registered and temporary users
+      // Temporary users need it to view transaction details
+      localStorage.setItem('playerUuid', uuid);
       
       toast.success('Profile created successfully!');
       setStep(2);
