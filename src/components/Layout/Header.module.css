@@ -217,6 +217,10 @@
   display: inline;
 }
 
+.mobileOnly {
+  display: none;
+}
+
 /* Mobile Responsive */
 @media (max-width: 1024px) {
   .nav {
@@ -262,6 +266,10 @@
   .userDropdown {
     min-width: 150px;
     font-size: var(--font-size-xs);
+  }
+
+  .mobileOnly {
+    display: flex;
   }
 }
 

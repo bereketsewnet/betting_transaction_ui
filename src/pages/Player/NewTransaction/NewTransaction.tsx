@@ -29,7 +29,7 @@ const transactionSchema = z.object({
   bankAccountNumber: z.string().optional(),
   accountHolderName: z.string().optional(),
   bettingSiteId: z.string().optional(),
-  playerSiteId: z.string().optional(),
+  playerSiteId: z.string().min(1, 'Player Username/ID is required'),
   tempPlayerId: z.string().optional(), // Optional player ID for temp transactions
 }).refine(
   (data) => {
@@ -136,7 +136,7 @@ export const NewTransaction: React.FC = () => {
       
       // Store playerUuid for both registered and temporary users
       // Temporary users need it to view transaction details
-      localStorage.setItem('playerUuid', uuid);
+        localStorage.setItem('playerUuid', uuid);
       
       toast.success('Profile created successfully!');
       setStep(2);
@@ -178,6 +178,9 @@ export const NewTransaction: React.FC = () => {
         }
         if (selectedFile) {
           transactionData.screenshot = selectedFile;
+        } else {
+          toast.error('Payment screenshot is required for deposits');
+          return;
         }
       }
 
@@ -304,16 +307,17 @@ export const NewTransaction: React.FC = () => {
             <Select
               {...register('bettingSiteId')}
               label="Betting Site"
-                options={
-                  bettingSites?.bettingSites && Array.isArray(bettingSites.bettingSites)
+                options={[
+                  { value: '', label: 'Choose Betting Site' },
+                  ...(bettingSites?.bettingSites && Array.isArray(bettingSites.bettingSites)
                     ? bettingSites.bettingSites
                         .filter((site: any) => site.isActive) // Only show active betting sites
                         .map((site: any) => ({
                           value: site.id.toString(),
                           label: `${site.name} - ${site.website}`,
                         }))
-                    : []
-                }
+                    : [])
+                ]}
               placeholder={loadingBettingSites ? "Loading betting sites..." : "Select betting site"}
               helperText={transactionType === 'DEPOSIT' ? "Required for deposits - Choose the betting platform" : "Optional for withdrawals"}
               fullWidth
@@ -332,10 +336,11 @@ export const NewTransaction: React.FC = () => {
 
             <Input
               {...register('playerSiteId')}
-              label="Player Username/ID (Optional)"
+              label="Player Username/ID"
               placeholder="Enter your username or ID on the betting site"
-              helperText={transactionType === 'DEPOSIT' ? "Optional - Your username/ID on the selected betting site" : "Optional for withdrawals"}
+              helperText={transactionType === 'DEPOSIT' ? "Required - Your username/ID on the selected betting site" : "Required for withdrawals"}
               fullWidth
+              required
             />
 
             {transactionType === 'DEPOSIT' && (
@@ -344,13 +349,14 @@ export const NewTransaction: React.FC = () => {
                   {...register('depositBankId')}
                   label="Select Bank"
                   placeholder={loadingDepositBanks ? "Loading banks..." : "Choose a bank"}
-                  options={
-                    depositBanks?.banks
+                  options={[
+                    { value: '', label: 'Choose Bank' },
+                    ...(depositBanks?.banks
                       ?.map((bank) => ({
                         value: bank.id.toString(),
                         label: `${bank.bankName} - ${bank.accountName}`,
-                      })) || []
-                  }
+                      })) || [])
+                  ]}
                   disabled={loadingDepositBanks}
                   fullWidth
                   required
@@ -389,11 +395,11 @@ export const NewTransaction: React.FC = () => {
 
                 <div>
                   <label className={styles.label}>
-                    Payment Screenshot (Optional)
+                    Payment Screenshot <span className={styles.required}>*</span>
                   </label>
                   <FileUpload
                     onFileSelect={setSelectedFile}
-                    helperText="Upload a screenshot of your payment confirmation"
+                    helperText="Upload a screenshot of your payment confirmation (Required)"
                   />
                 </div>
               </>
@@ -405,13 +411,14 @@ export const NewTransaction: React.FC = () => {
                   {...register('withdrawalBankId')}
                   label="Withdrawal Method"
                   placeholder={loadingWithdrawalBanks ? "Loading methods..." : "Choose withdrawal method"}
-                  options={
-                    withdrawalBanks?.banks
+                  options={[
+                    { value: '', label: 'Choose Withdrawal Method' },
+                    ...(withdrawalBanks?.banks
                       ?.map((bank) => ({
                         value: bank.id.toString(),
                         label: bank.bankName,
-                      })) || []
-                  }
+                      })) || [])
+                  ]}
                   disabled={loadingWithdrawalBanks}
                   fullWidth
                   required

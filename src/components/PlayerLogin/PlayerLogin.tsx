@@ -52,7 +52,7 @@ export const PlayerLogin: React.FC<PlayerLoginProps> = ({ onClose }) => {
       });
 
       if (!loginResponse.ok) {
-        throw new Error('Invalid credentials');
+        throw new Error('Incorrect email/phone or password');
       }
 
       const result = await loginResponse.json();

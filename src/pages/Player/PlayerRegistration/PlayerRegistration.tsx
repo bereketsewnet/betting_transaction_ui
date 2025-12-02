@@ -17,7 +17,7 @@ const registrationSchema = z.object({
   email: z.string().email('Must be a valid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   displayName: z.string().min(1, 'Display name is required'),
-  phone: z.string().optional().or(z.literal('')),
+  phone: z.string().min(1, 'Phone number is required'),
   languageCode: z.string().min(1, 'Language is required'),
 });
 
@@ -77,10 +77,9 @@ export const PlayerRegistration: React.FC = () => {
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
     try {
-      // Use email as both username and email
-      // The backend accepts extended fields even though TypeScript type doesn't include them
-      const response = await createPlayer.mutateAsync({
-        telegramId: data.email, // Use email as telegramId for now
+      // Check if user is trying to register with phone only (optional field in schema but we can enforce logic)
+      const registrationData = {
+        telegramId: data.email, // Use email as default telegramId
         telegramUsername: data.email,
         languageCode: data.languageCode,
         username: data.email,
@@ -88,7 +87,10 @@ export const PlayerRegistration: React.FC = () => {
         password: data.password,
         displayName: data.displayName,
         phone: data.phone,
-      } as any);
+      };
+
+      // The backend accepts extended fields even though TypeScript type doesn't include them
+      const response = await createPlayer.mutateAsync(registrationData as any);
 
       const playerUuid = response.player.playerUuid;
       localStorage.setItem('playerUuid', playerUuid);
@@ -178,11 +180,12 @@ export const PlayerRegistration: React.FC = () => {
 
                 <Input
                   {...register('phone')}
-                  label="Phone Number (Optional)"
+                  label="Phone Number"
                   placeholder="+1234567890"
                   error={errors.phone?.message}
-                  helperText="Your phone number (optional)"
+                  helperText="Your phone number"
                   fullWidth
+                  required
                 />
 
                 <Select

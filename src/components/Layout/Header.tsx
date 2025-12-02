@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, User, Menu, Settings, Database, DollarSign, FileText, Globe, Users, UserCog, Lock, ChevronDown, CreditCard, Building2 } from 'lucide-react';
+import { LogOut, User, Menu, Settings, Database, DollarSign, FileText, Globe, Users, UserCog, Lock, ChevronDown, CreditCard, Building2, LayoutDashboard, History } from 'lucide-react';
 import { useAuth } from '@/auth/AuthContext';
 import { Button } from '@/components/ui/Button/Button';
 import styles from './Header.module.css';
@@ -56,7 +56,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                 onMouseEnter={() => setShowAdminMenu(true)}
                 onMouseLeave={() => setShowAdminMenu(false)}
               >
-                <button className={styles.dropdownToggle}>
+                <button 
+                  className={styles.dropdownToggle}
+                  onClick={() => setShowAdminMenu(!showAdminMenu)}
+                >
                   <Settings size={16} />
                   Configuration
                   <ChevronDown size={16} />
@@ -146,7 +149,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                 onMouseEnter={() => setShowUserMenu(true)}
                 onMouseLeave={() => setShowUserMenu(false)}
               >
-                <button className={styles.userInfo}>
+                <button 
+                  className={styles.userInfo}
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                >
                   <User size={20} />
                   <span className={styles.username}>{user.displayName || user.username || 'User'}</span>
                   <span className={styles.role}>({typeof user.role === 'string' ? user.role : user.role?.name || 'unknown'})</span>
@@ -154,6 +160,56 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                 </button>
                 {showUserMenu && (
                   <div className={styles.userDropdown}>
+                    {/* Mobile Only: Admin Links */}
+                    {(typeof user.role === 'string' ? user.role : user.role?.name) === 'admin' && (
+                      <>
+                        <Link to="/admin" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <LayoutDashboard size={16} />
+                          Dashboard
+                        </Link>
+                        <Link to="/admin/transactions" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <CreditCard size={16} />
+                          Transactions
+                        </Link>
+                        <Link to="/admin/deposit-banks" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <Database size={16} />
+                          Deposit Banks
+                        </Link>
+                        <Link to="/admin/withdrawal-banks" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <DollarSign size={16} />
+                          Withdrawal Banks
+                        </Link>
+                        <Link to="/admin/templates" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <FileText size={16} />
+                          Templates
+                        </Link>
+                        <Link to="/admin/languages" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <Globe size={16} />
+                          Languages
+                        </Link>
+                        <Link to="/admin/agents" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <Users size={16} />
+                          Agents
+                        </Link>
+                        <Link to="/admin/users" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <UserCog size={16} />
+                          User Management
+                        </Link>
+                        <Link to="/admin/betting-sites" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                          <Building2 size={16} />
+                          Betting Sites
+                        </Link>
+                      </>
+                    )}
+                    
+                    {/* Mobile Only: Agent Links */}
+                    {(typeof user.role === 'string' ? user.role : user.role?.name) === 'agent' && (
+                      <Link to="/agent" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                        <LayoutDashboard size={16} />
+                        My Tasks
+                      </Link>
+                    )}
+
                     <Link to="/change-password" className={styles.dropdownItem}>
                       <Lock size={16} />
                       Change Password
@@ -172,7 +228,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
               onMouseEnter={() => setShowPlayerMenu(true)}
               onMouseLeave={() => setShowPlayerMenu(false)}
             >
-              <button className={styles.userInfo}>
+              <button 
+                className={styles.userInfo}
+                onClick={() => setShowPlayerMenu(!showPlayerMenu)}
+              >
                 <User size={20} />
                 <span className={styles.username}>Player</span>
                 <ChevronDown size={16} />
@@ -182,6 +241,14 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
                   <Link to="/player/dashboard" className={styles.dropdownItem}>
                     <Database size={16} />
                     Dashboard
+                  </Link>
+                  <Link to="/player/history" className={`${styles.dropdownItem} ${styles.mobileOnly}`}>
+                    <History size={16} />
+                    History
+                  </Link>
+                  <Link to="/player/change-password" className={styles.dropdownItem}>
+                    <Lock size={16} />
+                    Change Password
                   </Link>
                   <button 
                     onClick={() => {
@@ -199,7 +266,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenu = false })
             </div>
           ) : (
             <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
-              Login
+              Staff Login
             </Button>
           )}
         </div>

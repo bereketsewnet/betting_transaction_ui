@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useAdminTemplates, useCreateTemplate, useUpdateTemplate, useDeleteTemplate } from '@/api/hooks';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card/Card';
@@ -24,6 +24,7 @@ export const Templates: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [activeLanguage, setActiveLanguage] = useState<string>('');
 
   const { data: templatesData, isLoading } = useAdminTemplates();
   const createMutation = useCreateTemplate();
@@ -40,8 +41,36 @@ export const Templates: React.FC = () => {
     resolver: zodResolver(templateSchema),
   });
 
+  // Extract unique languages and sort them
+  const languages = useMemo(() => {
+    if (!templatesData?.templates) return [];
+    const langs = new Set(templatesData.templates.map(t => t.languageCode));
+    return Array.from(langs).sort();
+  }, [templatesData?.templates]);
+
+  // Set initial active language
+  useEffect(() => {
+    if (languages.length > 0 && !activeLanguage) {
+      setActiveLanguage(languages[0]);
+    }
+  }, [languages, activeLanguage]);
+
+  // Filter and sort templates for active language
+  const displayedTemplates = useMemo(() => {
+    if (!templatesData?.templates) return [];
+    
+    // If no language selected (e.g. initial load or no templates), show nothing or all?
+    // User wants to divide by language, so we stick to active language.
+    // If activeLanguage is not set yet but we have data, we might want to wait or fallback.
+    if (!activeLanguage) return [];
+
+    return templatesData.templates
+      .filter(t => t.languageCode === activeLanguage)
+      .sort((a, b) => a.keyName.localeCompare(b.keyName));
+  }, [templatesData?.templates, activeLanguage]);
+
   const handleAdd = () => {
-    reset({ languageCode: '', keyName: '', content: '' });
+    reset({ languageCode: activeLanguage || '', keyName: '', content: '' });
     setEditingTemplate(null);
     setIsModalOpen(true);
   };
@@ -83,20 +112,18 @@ export const Templates: React.FC = () => {
       header: 'ID',
       render: (value) => <span>#{value}</span>,
     },
-    {
-      key: 'languageCode',
-      header: 'Language',
-    },
+    // Removed Language Code column as it's now context-based
     {
       key: 'keyName',
       header: 'Key Name',
+      render: (value) => <span className={styles.keyName}>{value}</span>,
     },
     {
       key: 'content',
       header: 'Content',
       render: (value) => (
         <span className={styles.content}>
-          {String(value).substring(0, 50)}{String(value).length > 50 ? '...' : ''}
+          {String(value).substring(0, 100)}{String(value).length > 100 ? '...' : ''}
         </span>
       ),
     },
@@ -131,13 +158,28 @@ export const Templates: React.FC = () => {
               Add Template
             </Button>
           </div>
+          
+          {/* Language Tabs */}
+          {languages.length > 0 && (
+            <div className={styles.languageTabs}>
+              {languages.map(lang => (
+                <button
+                  key={lang}
+                  className={`${styles.tab} ${activeLanguage === lang ? styles.activeTab : ''}`}
+                  onClick={() => setActiveLanguage(lang)}
+                >
+                  {lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          )}
         </CardHeader>
         <CardContent padding="none">
           {isLoading ? (
             <div className={styles.loading}>Loading...</div>
           ) : (
             <DataTable
-              data={templatesData?.templates || []}
+              data={displayedTemplates}
               columns={columns}
             />
           )}
@@ -211,4 +253,3 @@ export const Templates: React.FC = () => {
     </div>
   );
 };
-

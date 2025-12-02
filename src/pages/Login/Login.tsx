@@ -20,7 +20,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -34,11 +34,22 @@ export const Login: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
+      // Allow phone number login by treating it as username
+      // The backend auth logic now supports phone lookup
       await login(data.username, data.password);
-      toast.success('Login successful!');
       
       // Get user role from localStorage (just set by login function)
       const userRole = localStorage.getItem('userRole');
+      
+      // Check if player is trying to login via staff portal
+      if (userRole === 'player') {
+        await logout();
+        toast.error('Please login via the Player section on the home page.');
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success('Login successful!');
       
       // Redirect to the page user was trying to access, or to their role's dashboard
       const from = (location.state as any)?.from?.pathname;
@@ -50,10 +61,6 @@ export const Login: React.FC = () => {
           navigate('/admin');
         } else if (userRole === 'agent') {
           navigate('/agent');
-        } else if (userRole === 'player') {
-          // Players should use the landing page login
-          toast.error('This login section is for Admin and Agent only. Please use the Player Login button on the landing page.');
-          navigate('/');
         } else {
           // Fallback: try to get role from stored user object
           const storedUser = localStorage.getItem('user');
@@ -66,13 +73,22 @@ export const Login: React.FC = () => {
               } else if (roleFromUser === 'agent') {
                 navigate('/agent');
               } else {
-                navigate('/');
+                // If somehow role is not admin/agent but also not explicitly 'player' string (maybe object?), handle or logout
+                // Assuming backend returns role name string in userRole for now.
+                // Safest to logout if not admin/agent here too?
+                // The user said "on the header put staff login instaed of lonly login", implying strict staff only.
+                // But let's stick to the 'player' check.
+                await logout();
+                toast.error('Access denied. Staff only.');
+                return;
               }
             } catch {
-              navigate('/');
+              await logout();
+              toast.error('Login failed. Invalid user data.');
             }
           } else {
-            navigate('/');
+             await logout();
+             toast.error('Login failed. No user data.');
           }
         }
       }
@@ -88,9 +104,9 @@ export const Login: React.FC = () => {
       <div className={styles.content}>
         <Card variant="elevated" className={styles.card}>
           <CardHeader>
-            <CardTitle>Login</CardTitle>
+            <CardTitle>Staff Login</CardTitle>
             <p className={styles.subtitle}>
-              Sign in to access your account
+              Sign in with Email or Phone (Staff Only)
             </p>
           </CardHeader>
           <CardContent>
@@ -98,8 +114,8 @@ export const Login: React.FC = () => {
               <Input
                 {...register('username')}
                 id="username"
-                label="Username or Email"
-                placeholder="Enter your username"
+                label="Email or Phone Number"
+                placeholder="Enter email or phone"
                 error={errors.username?.message}
                 fullWidth
                 autoComplete="username"

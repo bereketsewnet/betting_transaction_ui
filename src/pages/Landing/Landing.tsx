@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
 import { 
   ArrowRight, 
   DollarSign, 
@@ -21,9 +22,14 @@ import styles from './Landing.module.css';
 
 export const Landing: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const heroRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const [showPlayerLogin, setShowPlayerLogin] = useState(false);
+
+  // Check if player is logged in
+  const playerUuid = localStorage.getItem('playerUuid');
+  const isLoggedIn = isAuthenticated || !!playerUuid;
 
   useEffect(() => {
     const observerOptions = {
@@ -96,32 +102,58 @@ export const Landing: React.FC = () => {
               Join thousands of users who trust us with their deposits and withdrawals.
             </p>
             <div className={`${styles.heroActions} ${styles.fadeInUp}`}>
-              <Button
-                size="lg"
-                className={styles.primaryButton}
-                onClick={() => navigate('/player/register')}
-              >
-                Player Registration
-                <ArrowRight size={20} style={{ paddingTop: '6px' }} />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className={styles.secondaryButton}
-                onClick={() => setShowPlayerLogin(true)}
-              >
-                <LogIn size={20} style={{ paddingTop: '6px' }} />
-                Player Login
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className={styles.secondaryButton}
-                onClick={() => navigate('/player/new-transaction')}
-              >
-                <Search size={20} style={{ paddingTop: '6px' }} />
-                Transactions
-              </Button>
+              {!isLoggedIn && (
+                <>
+                  <Button
+                    size="lg"
+                    className={styles.primaryButton}
+                    onClick={() => navigate('/player/register')}
+                  >
+                    Player Registration
+                    <ArrowRight size={20} style={{ paddingTop: '6px' }} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className={styles.secondaryButton}
+                    onClick={() => setShowPlayerLogin(true)}
+                  >
+                    <LogIn size={20} style={{ paddingTop: '6px' }} />
+                    Player Login
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className={styles.secondaryButton}
+                    onClick={() => navigate('/player/new-transaction')}
+                  >
+                    <Search size={20} style={{ paddingTop: '6px' }} />
+                    Guest Transaction
+                  </Button>
+                </>
+              )}
+              {isLoggedIn && playerUuid && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className={styles.secondaryButton}
+                  onClick={() => navigate('/player/dashboard')}
+                >
+                  <Search size={20} style={{ paddingTop: '6px' }} />
+                  Go to Dashboard
+                </Button>
+              )}
+              {isAuthenticated && !playerUuid && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className={styles.secondaryButton}
+                  onClick={() => navigate('/admin')}
+                >
+                  <Search size={20} style={{ paddingTop: '6px' }} />
+                  Go to Dashboard
+                </Button>
+              )}
             </div>
             <div className={styles.trustBadges}>
               <div className={styles.badge}>
@@ -282,22 +314,36 @@ export const Landing: React.FC = () => {
             Join thousands of satisfied users and experience seamless payment management today
           </p>
           <div className={styles.ctaActions}>
-            <Button
-              size="lg"
-              onClick={() => navigate('/player/register')}
-              className={styles.ctaPrimaryButton}
-            >
-              Create Account
-              <ArrowRight size={20} style={{ paddingTop: '6px' }} />
-            </Button>
-            <Button
-              size="lg"
-              onClick={() => navigate('/login')}
-              className={styles.ctaPrimaryButton}
-            >
-              Staff Login
-              <ArrowRight size={20} style={{ paddingTop: '6px' }} />
-            </Button>
+            {!isLoggedIn && (
+              <>
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/player/register')}
+                  className={styles.ctaPrimaryButton}
+                >
+                  Create Account
+                  <ArrowRight size={20} style={{ paddingTop: '6px' }} />
+                </Button>
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/login')}
+                  className={styles.ctaPrimaryButton}
+                >
+                  Staff Login
+                  <ArrowRight size={20} style={{ paddingTop: '6px' }} />
+                </Button>
+              </>
+            )}
+            {isLoggedIn && (
+               <Button
+                  size="lg"
+                  onClick={() => navigate(playerUuid ? '/player/dashboard' : '/admin')}
+                  className={styles.ctaPrimaryButton}
+                >
+                  Go to Dashboard
+                  <ArrowRight size={20} style={{ paddingTop: '6px' }} />
+                </Button>
+            )}
           </div>
         </div>
       </section>
@@ -315,9 +361,10 @@ export const Landing: React.FC = () => {
             <div className={styles.footerSection}>
               <h4 className={styles.footerHeading}>Quick Links</h4>
               <ul className={styles.footerLinks}>
-                <li><a href="/player/register">Register</a></li>
+                {!isLoggedIn && <li><a href="/player/register">Register</a></li>}
                 <li><a href="/player/new-transaction">New Transaction</a></li>
-                <li><a href="/login">Staff Login</a></li>
+                {!isLoggedIn && <li><a href="/login">Staff Login</a></li>}
+                {isLoggedIn && <li><a href={playerUuid ? "/player/dashboard" : "/admin"}>Dashboard</a></li>}
               </ul>
             </div>
             <div className={styles.footerSection}>

@@ -13,9 +13,7 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  LogOut,
-  Database,
-  Lock
+  Database
 } from 'lucide-react';
 import styles from './PlayerDashboard.module.css';
 
@@ -74,11 +72,6 @@ export const PlayerDashboard: React.FC = () => {
   
   // Extract transactions array from paginated response
   const transactions = (data as any)?.transactions || [];
-
-  const handleLogout = () => {
-    localStorage.removeItem('playerUuid');
-    navigate('/');
-  };
 
   // Calculate statistics - counts only, no money amounts
   const stats = React.useMemo(() => {
@@ -192,24 +185,7 @@ export const PlayerDashboard: React.FC = () => {
               <p className={styles.subtitle}>Track your transactions and account activity</p>
             </div>
           </div>
-          <div className={styles.headerActions}>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/player/change-password')}
-              className={styles.profileButton}
-            >
-              <Lock size={18} />
-              Change Password
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className={styles.logoutButton}
-            >
-              <LogOut size={18} />
-              Logout
-            </Button>
-          </div>
+          {/* Header actions removed as requested - moved to profile menu */}
         </div>
       </div>
 

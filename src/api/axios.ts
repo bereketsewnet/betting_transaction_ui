@@ -57,6 +57,11 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Skip refresh logic for login endpoint to prevent page reload loop
+    if (originalRequest.url?.includes('/auth/login')) {
+      return Promise.reject(error);
+    }
+
     // If already refreshing, queue the request
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
